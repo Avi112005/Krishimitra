@@ -1,0 +1,2849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Crop Advisory System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+/* CSS Variables for Agricultural Theme */
+:root {
+  --background: #ffffff;
+  --foreground: #475569;
+  --card: #f8fafc;
+  --card-foreground: #475569;
+  --popover: #ffffff;
+  --popover-foreground: #475569;
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --secondary: #10b981;
+  --secondary-foreground: #ffffff;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #ffffff;
+  --ring: #059669;
+  --chart-1: #059669;
+  --chart-2: #10b981;
+  --chart-3: #475569;
+  --chart-4: #f1f5f9;
+  --chart-5: #ffffff;
+  --radius: 0.5rem;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark Mode Variables */
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #10b981;
+  --primary-foreground: #0f172a;
+  --secondary: #059669;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #10b981;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #f1f5f9;
+  --border: #334155;
+  --input: #1e293b;
+  --ring: #10b981;
+  --chart-1: #10b981;
+  --chart-2: #059669;
+  --chart-3: #f1f5f9;
+  --chart-4: #334155;
+  --chart-5: #1e293b;
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Navigation */
+.navbar {
+  background-color: var(--card);
+  border-bottom: 1px solid var(--border);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+
+.nav-brand i {
+  font-size: 1.5rem;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-decoration: none;
+  color: var(--muted-foreground);
+  transition: color 0.3s ease;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--primary);
+}
+
+.nav-link i {
+  font-size: 1.25rem;
+}
+
+.nav-link span {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle,
+.nav-toggle {
+  background: none;
+  border: none;
+  color: var(--foreground);
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover,
+.nav-toggle:hover {
+  background-color: var(--muted);
+}
+
+.nav-toggle {
+  display: none;
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 80px;
+  min-height: calc(100vh - 80px);
+}
+
+.page {
+  display: none;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.page-header h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 4rem 0;
+  background: linear-gradient(135deg, var(--background) 0%, var(--muted) 100%);
+}
+
+.hero-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.hero-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--muted-foreground);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.hero-illustration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-icon {
+  font-size: 8rem;
+  color: var(--primary-foreground);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius);
+  font-family: "DM Sans", sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-secondary {
+  background-color: var(--muted);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  transform: translateY(-2px);
+}
+
+/* Features Section */
+.features-section {
+  padding: 4rem 0;
+}
+
+.section-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--foreground);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background-color: var(--card);
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.feature-icon {
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.feature-icon i {
+  font-size: 1.5rem;
+  color: var(--primary-foreground);
+}
+
+.feature-card h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.feature-card p {
+  color: var(--muted-foreground);
+  line-height: 1.6;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.dashboard-card {
+  background-color: var(--card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-header i {
+  color: var(--primary);
+}
+
+/* Weather Card */
+.weather-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.weather-main {
+  text-align: center;
+}
+
+.temperature {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.weather-desc {
+  color: var(--muted-foreground);
+  margin-top: 0.5rem;
+}
+
+.weather-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.weather-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted-foreground);
+}
+
+/* Recommendations */
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recommendation-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--muted);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--primary);
+}
+
+.recommendation-item.priority-high {
+  border-left-color: var(--destructive);
+}
+
+.recommendation-item.priority-medium {
+  border-left-color: #f59e0b;
+}
+
+.recommendation-item.priority-low {
+  border-left-color: var(--primary);
+}
+
+.rec-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  flex-shrink: 0;
+}
+
+.rec-content h4 {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--foreground);
+}
+
+.rec-content p {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* Market Prices */
+.market-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.price-item:last-child {
+  border-bottom: none;
+}
+
+.crop-name {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.price {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.change {
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+}
+
+.change.positive {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.change.negative {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.dark .change.positive {
+  background-color: #14532d;
+  color: #bbf7d0;
+}
+
+.dark .change.negative {
+  background-color: #7f1d1d;
+  color: #fecaca;
+}
+
+/* Alerts */
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.alert-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--muted);
+  border-radius: var(--radius);
+}
+
+.alert-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  flex-shrink: 0;
+}
+
+.alert-content h4 {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--foreground);
+}
+
+.alert-content p {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.alert-time {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Chatbot */
+.chatbot-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 1rem;
+  background-color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.language-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--input);
+  color: var(--foreground);
+}
+
+.voice-btn {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.voice-btn:hover {
+  background-color: var(--secondary);
+}
+
+.voice-btn.recording {
+  background-color: var(--destructive);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.chat-messages {
+  height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.message {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 80%;
+}
+
+.bot-message {
+  align-self: flex-start;
+}
+
+.user-message {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  flex-shrink: 0;
+}
+
+.user-message .message-avatar {
+  background-color: var(--accent);
+}
+
+.message-content {
+  background-color: var(--muted);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  color: var(--foreground);
+}
+
+.user-message .message-content {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.quick-questions {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.quick-questions h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.quick-btn:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.chat-input-container {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--input);
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+}
+
+.send-btn {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+  background-color: var(--secondary);
+}
+
+/* Market Page */
+.market-controls {
+  padding: 2rem 0;
+}
+
+.market-filters {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--input);
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+.market-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.price-chart-container,
+.price-table-container {
+  background-color: var(--card);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.price-chart-container h3,
+.price-table-container h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--foreground);
+}
+
+.price-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-header {
+  font-weight: 600;
+  color: var(--foreground);
+  background-color: var(--muted);
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+}
+
+.table-row:hover {
+  background-color: var(--muted);
+}
+
+.table-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crop-icon {
+  color: var(--primary);
+}
+
+/* Pest Detection */
+.detection-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.upload-section {
+  margin-bottom: 2rem;
+}
+
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 3rem;
+  text-align: center;
+  background-color: var(--card);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.upload-area:hover {
+  border-color: var(--primary);
+  background-color: var(--muted);
+}
+
+.upload-area.dragover {
+  border-color: var(--primary);
+  background-color: var(--muted);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.upload-content h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.upload-content p {
+  color: var(--muted-foreground);
+  margin-bottom: 1.5rem;
+}
+
+.image-preview {
+  background-color: var(--card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.analysis-progress {
+  background-color: var(--card);
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.progress-content i {
+  font-size: 2rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.progress-content h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--muted);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.results-section {
+  margin-top: 2rem;
+}
+
+.results-section h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--foreground);
+}
+
+.result-card {
+  background-color: var(--card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.pest-info h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.confidence-score {
+  color: var(--muted-foreground);
+}
+
+.confidence-score span:last-child {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.severity-badge {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  background-color: #f59e0b;
+  color: white;
+}
+
+.result-section-item {
+  margin-bottom: 1.5rem;
+}
+
+.result-section-item h5 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.result-section-item h5 i {
+  color: var(--primary);
+}
+
+.treatment-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  background-color: var(--muted);
+  color: var(--foreground);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.treatment-option {
+  display: none;
+}
+
+.treatment-option.active {
+  display: block;
+}
+
+.treatment-option ul,
+.result-section-item ul {
+  list-style: none;
+  padding: 0;
+}
+
+.treatment-option li,
+.result-section-item li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: var(--foreground);
+}
+
+.treatment-option li:before,
+.result-section-item li:before {
+  content: "•";
+  color: var(--primary);
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+/* Settings */
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.settings-section {
+  background-color: var(--card);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.settings-section h3 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-section h3 i {
+  color: var(--primary);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-info h4 {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--foreground);
+}
+
+.setting-info p {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+.theme-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  background-color: var(--muted);
+  color: var(--foreground);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-option.active,
+.theme-option:hover {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.setting-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--input);
+  color: var(--foreground);
+  min-width: 150px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 3rem;
+  height: 1.5rem;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--muted);
+  transition: 0.3s;
+  border-radius: 1.5rem;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 1.125rem;
+  width: 1.125rem;
+  left: 0.1875rem;
+  bottom: 0.1875rem;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--primary);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(1.5rem);
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-avatar {
+  font-size: 3rem;
+  color: var(--primary);
+}
+
+.profile-info h4 {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--foreground);
+}
+
+.profile-info p {
+  color: var(--muted-foreground);
+  margin-bottom: 1rem;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  top: 100px;
+  right: 1rem;
+  background-color: var(--card);
+  color: var(--foreground);
+  padding: 1rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 1001;
+  min-width: 300px;
+}
+
+.toast.show {
+  transform: translateX(0);
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toast-icon {
+  font-size: 1.25rem;
+}
+
+.toast.success .toast-icon {
+  color: var(--primary);
+}
+
+.toast.error .toast-icon {
+  color: var(--destructive);
+}
+
+.toast.info .toast-icon {
+  color: var(--accent);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-menu {
+    position: fixed;
+    top: 80px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 80px);
+    background-color: var(--card);
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 2rem;
+    transition: left 0.3s ease;
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-menu.active {
+    left: 0;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-content {
+    grid-template-columns: 1fr;
+  }
+
+  .weather-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .quick-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .table-cell {
+    justify-content: space-between;
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .profile-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .nav-container {
+    padding: 0.75rem;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-filters {
+    flex-direction: column;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .toast {
+    right: 0.5rem;
+    left: 0.5rem;
+    min-width: auto;
+  }
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease-in-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bounce {
+  animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Focus States */
+button:focus,
+input:focus,
+select:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --muted: #f0f0f0;
+  }
+
+  .dark {
+    --border: #ffffff;
+    --muted: #2a2a2a;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-seedling"></i>
+                <span>CropAdvisor</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link active" data-page="home">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#dashboard" class="nav-link" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#chatbot" class="nav-link" data-page="chatbot">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant</span>
+                </a>
+                <a href="#market" class="nav-link" data-page="market">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Market Prices</span>
+                </a>
+                <a href="#pest-detection" class="nav-link" data-page="pest-detection">
+                    <i class="fas fa-bug"></i>
+                    <span>Pest Detection</span>
+                </a>
+                <a href="#settings" class="nav-link" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="nav-toggle" id="navToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <section id="home" class="page active">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">Smart Crop Advisory System</h1>
+                        <p class="hero-subtitle">Empowering farmers with AI-driven insights for better crop management, pest detection, and market intelligence.</p>
+                        <div class="hero-buttons">
+                            <button class="btn btn-primary" onclick="showPage('dashboard')">
+                                <i class="fas fa-rocket"></i>
+                                Get Started
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('chatbot')">
+                                <i class="fas fa-comments"></i>
+                                Ask AI Assistant
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hero-image">
+                        <div class="hero-illustration">
+                            <i class="fas fa-seedling hero-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-section">
+                <div class="container">
+                    <h2 class="section-title">Our Features</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h3>AI Crop Advisory</h3>
+                            <p>Get personalized recommendations for your crops based on soil conditions, weather, and growth stage.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-bug"></i>
+                            </div>
+                            <h3>Pest Detection</h3>
+                            <p>Upload crop images to identify pests and diseases with AI-powered analysis and treatment suggestions.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Market Prices</h3>
+                            <p>Stay updated with real-time market prices and trends to make informed selling decisions.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-cloud-sun"></i>
+                            </div>
+                            <h3>Weather Insights</h3>
+                            <p>Get accurate weather forecasts and alerts to plan your farming activities effectively.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Page -->
+        <section id="dashboard" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Your personalized farming insights</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card weather-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-cloud-sun"></i> Weather Today</h3>
+                        </div>
+                        <div class="weather-content">
+                            <div class="weather-main">
+                                <div class="temperature">28°C</div>
+                                <div class="weather-desc">Partly Cloudy</div>
+                            </div>
+                            <div class="weather-details">
+                                <div class="weather-item">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Humidity: 65%</span>
+                                </div>
+                                <div class="weather-item">
+                                    <i class="fas fa-wind"></i>
+                                    <span>Wind: 12 km/h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card recommendations-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-lightbulb"></i> Today's Recommendations</h3>
+                        </div>
+                        <div class="recommendations-list">
+                            <div class="recommendation-item priority-high">
+                                <div class="rec-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="rec-content">
+                                    <h4>Pest Alert</h4>
+                                    <p>Check tomato plants for aphids. Apply neem oil spray.</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item priority-medium">
+                                <div class="rec-icon"><i class="fas fa-tint"></i></div>
+                                <div class="rec-content">
+                                    <h4>Irrigation</h4>
+                                    <p>Water wheat crops early morning. Soil moisture is low.</p>
+                                </div>
+                            </div>
+                            <div class="recommendation-item priority-low">
+                                <div class="rec-icon"><i class="fas fa-leaf"></i></div>
+                                <div class="rec-content">
+                                    <h4>Fertilizer</h4>
+                                    <p>Apply nitrogen fertilizer to corn in 3 days.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card market-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Market Prices</h3>
+                        </div>
+                        <div class="market-prices">
+                            <div class="price-item">
+                                <span class="crop-name">Wheat</span>
+                                <span class="price">₹2,150/quintal</span>
+                                <span class="change positive">+2.5%</span>
+                            </div>
+                            <div class="price-item">
+                                <span class="crop-name">Rice</span>
+                                <span class="price">₹1,890/quintal</span>
+                                <span class="change negative">-1.2%</span>
+                            </div>
+                            <div class="price-item">
+                                <span class="crop-name">Tomato</span>
+                                <span class="price">₹45/kg</span>
+                                <span class="change positive">+5.8%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card alerts-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-bell"></i> Alerts & Notifications</h3>
+                        </div>
+                        <div class="alerts-list">
+                            <div class="alert-item">
+                                <i class="fas fa-cloud-rain alert-icon"></i>
+                                <div class="alert-content">
+                                    <h4>Rain Expected</h4>
+                                    <p>Heavy rainfall predicted tomorrow. Postpone spraying.</p>
+                                    <span class="alert-time">2 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="alert-item">
+                                <i class="fas fa-thermometer-half alert-icon"></i>
+                                <div class="alert-content">
+                                    <h4>Temperature Alert</h4>
+                                    <p>High temperature expected. Increase irrigation frequency.</p>
+                                    <span class="alert-time">5 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chatbot Page -->
+        <section id="chatbot" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>AI Crop Assistant</h1>
+                    <p>Ask questions about your crops in your preferred language</p>
+                </div>
+
+                <div class="chatbot-container">
+                    <div class="chat-header">
+                        <div class="chat-controls">
+                            <select id="languageSelect" class="language-select">
+                                <option value="en">English</option>
+                                <option value="hi">हिंदी</option>
+                                <option value="te">తెలుగు</option>
+                                <option value="ta">தமிழ்</option>
+                            </select>
+                            <button class="voice-btn" id="voiceBtn">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your AI crop assistant. How can I help you today?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-questions">
+                        <h3>Quick Questions</h3>
+                        <div class="quick-buttons">
+                            <button class="quick-btn" onclick="sendQuickMessage('What fertilizer should I use for tomatoes?')">
+                                <i class="fas fa-leaf"></i>
+                                Fertilizer for Tomatoes
+                            </button>
+                            <button class="quick-btn" onclick="sendQuickMessage('How to control pests in wheat?')">
+                                <i class="fas fa-bug"></i>
+                                Pest Control
+                            </button>
+                            <button class="quick-btn" onclick="sendQuickMessage('Best time to plant rice?')">
+                                <i class="fas fa-clock"></i>
+                                Planting Time
+                            </button>
+                            <button class="quick-btn" onclick="sendQuickMessage('Soil preparation tips')">
+                                <i class="fas fa-seedling"></i>
+                                Soil Preparation
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <div class="chat-input">
+                            <input type="text" id="messageInput" placeholder="Type your question here..." />
+                            <button class="send-btn" id="sendBtn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Market Prices Page -->
+        <section id="market" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Market Prices</h1>
+                    <p>Real-time crop prices and market trends</p>
+                </div>
+
+                <div class="market-controls">
+                    <div class="market-filters">
+                        <select id="cropFilter" class="filter-select">
+                            <option value="all">All Crops</option>
+                            <option value="cereals">Cereals</option>
+                            <option value="vegetables">Vegetables</option>
+                            <option value="fruits">Fruits</option>
+                        </select>
+                        <select id="regionFilter" class="filter-select">
+                            <option value="all">All Regions</option>
+                            <option value="north">North India</option>
+                            <option value="south">South India</option>
+                            <option value="west">West India</option>
+                            <option value="east">East India</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="market-content">
+                    <div class="price-chart-container">
+                        <h3>Price Trends</h3>
+                        <canvas id="priceChart" style="max-height: 300px;"></canvas>
+                    </div>
+
+                    <div class="price-table-container">
+                        <h3>Current Prices</h3>
+                        <div class="price-table">
+                            <div class="table-header">
+                                <div class="table-cell">Crop</div>
+                                <div class="table-cell">Price</div>
+                                <div class="table-cell">Change</div>
+                                <div class="table-cell">Market</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="table-cell">
+                                    <i class="fas fa-seedling crop-icon"></i>
+                                    Wheat
+                                </div>
+                                <div class="table-cell">₹2,150/quintal</div>
+                                <div class="table-cell positive">+2.5%</div>
+                                <div class="table-cell">Delhi</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="table-cell">
+                                    <i class="fas fa-seedling crop-icon"></i>
+                                    Rice
+                                </div>
+                                <div class="table-cell">₹1,890/quintal</div>
+                                <div class="table-cell negative">-1.2%</div>
+                                <div class="table-cell">Mumbai</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="table-cell">
+                                    <i class="fas fa-apple-alt crop-icon"></i>
+                                    Tomato
+                                </div>
+                                <div class="table-cell">₹45/kg</div>
+                                <div class="table-cell positive">+5.8%</div>
+                                <div class="table-cell">Bangalore</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="table-cell">
+                                    <i class="fas fa-carrot crop-icon"></i>
+                                    Onion
+                                </div>
+                                <div class="table-cell">₹32/kg</div>
+                                <div class="table-cell negative">-3.1%</div>
+                                <div class="table-cell">Pune</div>
+                            </div>
+                            <div class="table-row">
+                                <div class="table-cell">
+                                    <i class="fas fa-seedling crop-icon"></i>
+                                    Corn
+                                </div>
+                                <div class="table-cell">₹1,750/quintal</div>
+                                <div class="table-cell positive">+1.8%</div>
+                                <div class="table-cell">Hyderabad</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pest Detection Page -->
+        <section id="pest-detection" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Pest & Disease Detection</h1>
+                    <p>Upload crop images for AI-powered pest identification</p>
+                </div>
+
+                <div class="detection-container">
+                    <div class="upload-section">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <h3>Upload Crop Image</h3>
+                                <p>Drag and drop an image or click to browse</p>
+                                <input type="file" id="imageInput" accept="image/*" hidden>
+                                <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
+                                    Choose Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="image-preview" id="imagePreview" style="display: none;">
+                            <img id="previewImg" src="/placeholder.svg" alt="Preview">
+                            <div class="preview-actions">
+                                <button class="btn btn-primary" id="analyzeBtn">
+                                    <i class="fas fa-search"></i>
+                                    Analyze Image
+                                </button>
+                                <button class="btn btn-secondary" id="removeBtn">
+                                    <i class="fas fa-trash"></i>
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="analysis-progress" id="analysisProgress" style="display: none;">
+                            <div class="progress-content">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <h3>Analyzing Image...</h3>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                                <p id="progressText">Initializing AI analysis...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-section" id="resultsSection" style="display: none;">
+                        <h3>Detection Results</h3>
+                        <div class="result-card">
+                            <div class="result-header">
+                                <div class="pest-info">
+                                    <h4 id="pestName">Aphids</h4>
+                                    <div class="confidence-score">
+                                        <span>Confidence: </span>
+                                        <span id="confidenceScore">92%</span>
+                                    </div>
+                                </div>
+                                <div class="severity-badge" id="severityBadge">
+                                    <span>Moderate</span>
+                                </div>
+                            </div>
+
+                            <div class="result-content">
+                                <div class="result-section-item">
+                                    <h5><i class="fas fa-info-circle"></i> Description</h5>
+                                    <p id="pestDescription">Small, soft-bodied insects that feed on plant sap, causing yellowing and curling of leaves.</p>
+                                </div>
+
+                                <div class="result-section-item">
+                                    <h5><i class="fas fa-shield-alt"></i> Treatment Options</h5>
+                                    <div class="treatment-tabs">
+                                        <button class="tab-btn active" onclick="showTreatment('organic')">Organic</button>
+                                        <button class="tab-btn" onclick="showTreatment('chemical')">Chemical</button>
+                                    </div>
+                                    <div class="treatment-content">
+                                        <div id="organicTreatment" class="treatment-option active">
+                                            <ul>
+                                                <li>Spray neem oil solution (2-3ml per liter of water)</li>
+                                                <li>Use insecticidal soap spray</li>
+                                                <li>Introduce ladybugs as natural predators</li>
+                                                <li>Remove affected leaves manually</li>
+                                            </ul>
+                                        </div>
+                                        <div id="chemicalTreatment" class="treatment-option">
+                                            <ul>
+                                                <li>Apply Imidacloprid 17.8% SL @ 0.3ml/liter</li>
+                                                <li>Use Thiamethoxam 25% WG @ 0.2g/liter</li>
+                                                <li>Spray during early morning or evening</li>
+                                                <li>Follow safety precautions and PHI period</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="result-section-item">
+                                    <h5><i class="fas fa-exclamation-triangle"></i> Prevention Tips</h5>
+                                    <ul id="preventionTips">
+                                        <li>Maintain proper plant spacing for air circulation</li>
+                                        <li>Remove weeds that harbor pests</li>
+                                        <li>Monitor plants regularly for early detection</li>
+                                        <li>Use reflective mulch to deter aphids</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Page -->
+        <section id="settings" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                    <p>Customize your experience</p>
+                </div>
+
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h3><i class="fas fa-palette"></i> Appearance</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Theme</h4>
+                                <p>Choose between light and dark mode</p>
+                            </div>
+                            <div class="setting-control">
+                                <div class="theme-options">
+                                    <button class="theme-option active" data-theme="light">
+                                        <i class="fas fa-sun"></i>
+                                        Light
+                                    </button>
+                                    <button class="theme-option" data-theme="dark">
+                                        <i class="fas fa-moon"></i>
+                                        Dark
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-language"></i> Language & Region</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Language</h4>
+                                <p>Select your preferred language</p>
+                            </div>
+                            <div class="setting-control">
+                                <select class="setting-select">
+                                    <option value="en">English</option>
+                                    <option value="hi">हिंदी (Hindi)</option>
+                                    <option value="te">తెలుగు (Telugu)</option>
+                                    <option value="ta">தமிழ் (Tamil)</option>
+                                    <option value="bn">বাংলা (Bengali)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Region</h4>
+                                <p>Set your farming region for localized advice</p>
+                            </div>
+                            <div class="setting-control">
+                                <select class="setting-select">
+                                    <option value="north">North India</option>
+                                    <option value="south">South India</option>
+                                    <option value="west">West India</option>
+                                    <option value="east">East India</option>
+                                    <option value="central">Central India</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-bell"></i> Notifications</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Weather Alerts</h4>
+                                <p>Get notified about weather changes</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Pest Alerts</h4>
+                                <p>Receive notifications about pest outbreaks</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Market Price Updates</h4>
+                                <p>Get updates on crop price changes</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-user"></i> Profile</h3>
+                        <div class="profile-section">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="profile-info">
+                                <h4>Farmer Name</h4>
+                                <p>farmer@example.com</p>
+                                <button class="btn btn-secondary">Edit Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <i class="toast-icon"></i>
+            <span class="toast-message"></span>
+        </div>
+    </div>
+
+    <script>
+
+// Global Variables
+let currentPage = "home"
+let isDarkMode = false
+let isRecording = false
+let priceChart = null
+
+// DOM Elements
+const navLinks = document.querySelectorAll(".nav-link")
+const pages = document.querySelectorAll(".page")
+const themeToggle = document.getElementById("themeToggle")
+const navToggle = document.getElementById("navToggle")
+const navMenu = document.getElementById("navMenu")
+const toast = document.getElementById("toast")
+
+// Initialize App
+document.addEventListener("DOMContentLoaded", () => {
+  initializeApp()
+  setupEventListeners()
+  initializePriceChart()
+  checkSystemTheme()
+})
+
+function initializeApp() {
+  showPage("home")
+  loadUserPreferences()
+  setupDragAndDrop()
+  console.log("Smart Crop Advisory System initialized")
+}
+
+// Setup Event Listeners
+function setupEventListeners() {
+  navLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      const page = link.getAttribute("data-page")
+      showPage(page)
+    })
+  })
+
+  themeToggle.addEventListener("click", toggleTheme)
+  navToggle.addEventListener("click", toggleMobileNav)
+
+  document.addEventListener("click", (e) => {
+    if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+      navMenu.classList.remove("active")
+    }
+  })
+
+  const messageInput = document.getElementById("messageInput")
+  const sendBtn = document.getElementById("sendBtn")
+  const voiceBtn = document.getElementById("voiceBtn")
+
+  if (messageInput && sendBtn) {
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendMessage()
+      }
+    })
+    sendBtn.addEventListener("click", sendMessage)
+  }
+
+  if (voiceBtn) {
+    voiceBtn.addEventListener("click", toggleVoiceRecording)
+  }
+
+  const imageInput = document.getElementById("imageInput")
+  const analyzeBtn = document.getElementById("analyzeBtn")
+  const removeBtn = document.getElementById("removeBtn")
+
+  if (imageInput) {
+    imageInput.addEventListener("change", handleImageUpload)
+  }
+
+  if (analyzeBtn) {
+    analyzeBtn.addEventListener("click", analyzeImage)
+  }
+
+  if (removeBtn) {
+    removeBtn.addEventListener("click", removeImage)
+  }
+
+  const themeOptions = document.querySelectorAll(".theme-option")
+  themeOptions.forEach((option) => {
+    option.addEventListener("click", (e) => {
+      const theme = e.currentTarget.getAttribute("data-theme")
+      setTheme(theme)
+      themeOptions.forEach((opt) => opt.classList.remove("active"))
+      e.currentTarget.classList.add("active")
+    })
+  })
+
+  const cropFilter = document.getElementById("cropFilter")
+  const regionFilter = document.getElementById("regionFilter")
+
+  if (cropFilter) {
+    cropFilter.addEventListener("change", filterMarketData)
+  }
+
+  if (regionFilter) {
+    regionFilter.addEventListener("change", filterMarketData)
+  }
+}
+
+// Page Navigation
+function showPage(pageId) {
+  pages.forEach((page) => {
+    page.classList.remove("active")
+  })
+
+  const targetPage = document.getElementById(pageId)
+  if (targetPage) {
+    targetPage.classList.add("active")
+    currentPage = pageId
+  }
+
+  navLinks.forEach((link) => {
+    link.classList.remove("active")
+    if (link.getAttribute("data-page") === pageId) {
+      link.classList.add("active")
+    }
+  })
+
+  navMenu.classList.remove("active")
+
+  if (pageId === "market") {
+    setTimeout(() => {
+      if (priceChart) {
+        priceChart.resize()
+      }
+    }, 100)
+  }
+
+  console.log(`Navigated to page: ${pageId}`)
+}
+
+// Theme Management
+function checkSystemTheme() {
+  const savedTheme = localStorage.getItem("theme")
+  if (savedTheme) {
+    setTheme(savedTheme)
+  } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    setTheme("dark")
+  }
+}
+
+function toggleTheme() {
+  const newTheme = isDarkMode ? "light" : "dark"
+  setTheme(newTheme)
+}
+
+function setTheme(theme) {
+  isDarkMode = theme === "dark"
+
+  if (isDarkMode) {
+    document.body.classList.add("dark")
+    themeToggle.innerHTML = '<i class="fas fa-sun"></i>'
+  } else {
+    document.body.classList.remove("dark")
+    themeToggle.innerHTML = '<i class="fas fa-moon"></i>'
+  }
+
+  localStorage.setItem("theme", theme)
+
+  const themeOptions = document.querySelectorAll(".theme-option")
+  themeOptions.forEach((option) => {
+    option.classList.remove("active")
+    if (option.getAttribute("data-theme") === theme) {
+      option.classList.add("active")
+    }
+  })
+
+  console.log(`Theme changed to: ${theme}`)
+}
+
+// Mobile Navigation
+function toggleMobileNav() {
+  navMenu.classList.toggle("active")
+}
+
+// Chatbot Functionality
+
+function addMessageToChat(message, sender) {
+  const chatMessages = document.getElementById("chatMessages");
+  if (!chatMessages) return;
+
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
+
+  if (sender === "bot") {
+    messageDiv.innerHTML = `
+      <div class="message-avatar"><i class="fas fa-robot"></i></div>
+      <div class="message-content"><p>${message}</p></div>
+    `;
+  } else {
+    messageDiv.innerHTML = `
+      <div class="message-avatar"><i class="fas fa-user"></i></div>
+      <div class="message-content"><p>${message}</p></div>
+    `;
+  }
+
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function sendMessage() {
+  const messageInput = document.getElementById("messageInput");
+  const message = messageInput.value.trim();
+  if (!message) return;
+
+  addMessageToChat(message, "user");
+  messageInput.value = "";
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+
+    const data = await response.json();
+    addMessageToChat(data.reply, "bot");
+  } catch (error) {
+    addMessageToChat("⚠️ Error connecting to KrishiMitra server.", "bot");
+    console.error(error);
+  }
+}
+
+async function sendQuickMessage(message) {
+  addMessageToChat(message, "user");
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+
+    const data = await response.json();
+    addMessageToChat(data.reply, "bot");
+  } catch (error) {
+    addMessageToChat("⚠️ Error connecting to KrishiMitra server.", "bot");
+    console.error(error);
+  }
+}
+    let mediaRecorder;
+let audioChunks = [];
+let currentStream = null;
+
+async function toggleVoiceRecording() {
+  const voiceBtn = document.getElementById("voiceBtn");
+
+  if (isRecording) {
+    stopVoiceRecording();
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    currentStream = stream;
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const formData = new FormData();
+      formData.append("file", audioBlob, "voice.webm");
+
+      showToast("🎙️ Transcribing speech with Groq Whisper...", "info");
+
+      try {
+        const response = await fetch("/transcribe", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (data.text) {
+          document.getElementById("messageInput").value = data.text;
+          showToast("✅ Transcription complete!", "success");
+        } else {
+          showToast("⚠️ No text detected. Try again.", "error");
+        }
+      } catch (error) {
+        console.error("Whisper transcription error:", error);
+        showToast("❌ Transcription failed.", "error");
+      } finally {
+        if (currentStream) {
+          currentStream.getTracks().forEach((track) => track.stop());
+          currentStream = null;
+        }
+      }
+    };
+
+    mediaRecorder.start();
+    startVoiceRecording();
+  } catch (err) {
+    console.error("Microphone access error:", err);
+    showToast("❌ Microphone access denied.", "error");
+  }
+}
+
+function startVoiceRecording() {
+  isRecording = true;
+  const voiceBtn = document.getElementById("voiceBtn");
+  voiceBtn.classList.add("recording");
+  voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+  showToast("🎧 Recording... Speak now!", "info");
+}
+
+function stopVoiceRecording() {
+  isRecording = false;
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+  }
+  const voiceBtn = document.getElementById("voiceBtn");
+  voiceBtn.classList.remove("recording");
+  voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+}
+
+function setupDragAndDrop() {
+  const uploadArea = document.getElementById("uploadArea");
+  if (!uploadArea) return;
+
+  uploadArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadArea.classList.add("dragover");
+  });
+
+  uploadArea.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove("dragover");
+  });
+
+  uploadArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove("dragover");
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type.startsWith("image/")) {
+      handleImageFile(files[0]);
+    } else {
+      showToast("Please drop a valid image file!", "error");
+    }
+  });
+
+  uploadArea.addEventListener("click", () => {
+    document.getElementById("imageInput").click();
+  });
+}
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    handleImageFile(file);
+  } else {
+    showToast("Invalid file type. Please upload an image.", "error");
+  }
+}
+
+function handleImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    showImagePreview(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showImagePreview(imageSrc) {
+  const uploadArea = document.getElementById("uploadArea");
+  const imagePreview = document.getElementById("imagePreview");
+  const previewImg = document.getElementById("previewImg");
+
+  uploadArea.style.display = "none";
+  previewImg.src = imageSrc;
+  imagePreview.style.display = "block";
+}
+
+function removeImage() {
+  const uploadArea = document.getElementById("uploadArea");
+  const imagePreview = document.getElementById("imagePreview");
+  const imageInput = document.getElementById("imageInput");
+  const resultsSection = document.getElementById("resultsSection");
+  const analysisProgress = document.getElementById("analysisProgress");
+
+  uploadArea.style.display = "block";
+  imagePreview.style.display = "none";
+  resultsSection.style.display = "none";
+  analysisProgress.style.display = "none";
+  imageInput.value = "";
+}
+
+// Analyze Image for Pest Detection
+async function analyzeImage() {
+  const imageInput = document.getElementById("imageInput");
+  const analysisProgress = document.getElementById("analysisProgress");
+  const progressFill = document.getElementById("progressFill");
+  const progressText = document.getElementById("progressText");
+  const imagePreview = document.getElementById("imagePreview");
+
+  if (!imageInput.files.length) {
+    showToast("⚠️ Please select or upload an image first!", "error");
+    return;
+  }
+
+  const file = imageInput.files[0];
+  const formData = new FormData();
+  formData.append("file", file);
+
+  imagePreview.style.display = "none";
+  analysisProgress.style.display = "block";
+  progressFill.style.width = "0%";
+  progressText.textContent = "Initializing AI analysis...";
+
+  try {
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 25;
+      progressFill.style.width = progress + "%";
+      if (progress >= 100) clearInterval(progressInterval);
+    }, 500);
+
+    showToast("🧠 Analyzing image with Gemini Vision...", "info");
+
+    const response = await fetch("/detect_pest", {
+      method: "POST",
+      body: formData,
+    });
+
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error("Invalid JSON:", text);
+      throw new Error("Server returned invalid JSON");
+    }
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error || "Server Error");
+    }
+
+    progressFill.style.width = "100%";
+    progressText.textContent = "Analysis complete!";
+    setTimeout(() => {
+      displayPestResults(data);
+    }, 800);
+  } catch (error) {
+    console.error("Pest analysis error:", error);
+    showToast("❌ Pest analysis failed: " + error.message, "error");
+  }
+}
+
+// Display pest detection results
+function displayPestResults(data) {
+  const analysisProgress = document.getElementById("analysisProgress");
+  const resultsSection = document.getElementById("resultsSection");
+
+  analysisProgress.style.display = "none";
+  resultsSection.style.display = "block";
+
+  document.getElementById("pestName").textContent = data.pest_name || "Unknown Pest";
+  document.getElementById("confidenceScore").textContent = data.confidence || "N/A";
+  document.getElementById("severityBadge").textContent = data.severity || "Unknown";
+  document.getElementById("pestDescription").textContent = data.description || "No detailed description available.";
+
+  const toList = (arr) => {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) return "<ul><li>No data available</li></ul>";
+    return "<ul>" + arr.map((item) => `<li>${item}</li>`).join("") + "</ul>";
+  };
+
+  document.getElementById("organicTreatment").innerHTML = toList(data.organic_treatments);
+  document.getElementById("chemicalTreatment").innerHTML = toList(data.chemical_treatments);
+  document.getElementById("preventionTips").innerHTML = toList(data.prevention_tips);
+
+  showToast("✅ Pest analysis completed successfully!", "success");
+}
+
+//Switch between treatment tabs
+function showTreatment(type) {
+  const tabs = document.querySelectorAll(".tab-btn");
+  const treatments = document.querySelectorAll(".treatment-option");
+
+  tabs.forEach((tab) => tab.classList.remove("active"));
+  treatments.forEach((treatment) => treatment.classList.remove("active"));
+
+  document.querySelector(`[onclick="showTreatment('${type}')"]`).classList.add("active");
+  document.getElementById(`${type}Treatment`).classList.add("active");
+}
+
+// Toast Notification
+function showToast(message, type) {
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+// Market Price Chart
+function initializePriceChart() {
+  const ctx = document.getElementById("priceChart")
+  if (!ctx) return
+
+  const chartData = {
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    datasets: [
+      {
+        label: "Wheat",
+        data: [2000, 2100, 2050, 2150, 2200, 2150],
+        borderColor: "rgb(5, 150, 105)",
+        backgroundColor: "rgba(5, 150, 105, 0.1)",
+        tension: 0.4,
+      },
+      {
+        label: "Rice",
+        data: [1800, 1850, 1900, 1880, 1920, 1890],
+        borderColor: "rgb(16, 185, 129)",
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        tension: 0.4,
+      },
+      {
+        label: "Tomato",
+        data: [35, 40, 38, 42, 45, 45],
+        borderColor: "rgb(71, 85, 105)",
+        backgroundColor: "rgba(71, 85, 105, 0.1)",
+        tension: 0.4,
+      },
+    ],
+  }
+
+  const config = {
+    type: "line",
+    data: chartData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: false,
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          grid: {
+            color: isDarkMode ? "#334155" : "#e2e8f0",
+          },
+          ticks: {
+            color: isDarkMode ? "#f1f5f9" : "#475569",
+          },
+        },
+        x: {
+          grid: {
+            color: isDarkMode ? "#334155" : "#e2e8f0",
+          },
+          ticks: {
+            color: isDarkMode ? "#f1f5f9" : "#475569",
+          },
+        },
+      },
+    },
+  }
+
+  priceChart = new Chart(ctx, config)
+}
+
+function filterMarketData() {
+  const cropFilter = document.getElementById("cropFilter").value
+  const regionFilter = document.getElementById("regionFilter").value
+
+  console.log(`Filtering market data: crop=${cropFilter}, region=${regionFilter}`)
+  showToast(`Filtered by ${cropFilter} crops in ${regionFilter} region`, "info")
+}
+
+// Utility Functions
+function showToast(message, type = "info") {
+  const toast = document.getElementById("toast")
+  const toastIcon = toast.querySelector(".toast-icon")
+  const toastMessage = toast.querySelector(".toast-message")
+
+  const icons = {
+    success: "fas fa-check-circle",
+    error: "fas fa-exclamation-circle",
+    info: "fas fa-info-circle",
+  }
+
+  toastIcon.className = `toast-icon ${icons[type] || icons.info}`
+  toastMessage.textContent = message
+  toast.className = `toast ${type}`
+
+  toast.classList.add("show")
+
+  setTimeout(() => {
+    toast.classList.remove("show")
+  }, 3000)
+}
+
+function loadUserPreferences() {
+  const savedTheme = localStorage.getItem("theme")
+  if (savedTheme) {
+    setTheme(savedTheme)
+  }
+
+  const savedLanguage = localStorage.getItem("language")
+  if (savedLanguage) {
+    const languageSelect = document.getElementById("languageSelect")
+    if (languageSelect) {
+      languageSelect.value = savedLanguage
+    }
+  }
+}
+
+// Animation helpers
+function animateElement(element, animationClass) {
+  element.classList.add(animationClass)
+  element.addEventListener(
+    "animationend",
+    () => {
+      element.classList.remove(animationClass)
+    },
+    { once: true },
+  )
+}
+
+// Intersection Observer for animations
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: "0px 0px -50px 0px",
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("fade-in")
+    }
+  })
+}, observerOptions)
+
+// Observe elements for animation
+document.addEventListener("DOMContentLoaded", () => {
+  const animatedElements = document.querySelectorAll(".feature-card, .dashboard-card")
+  animatedElements.forEach((el) => observer.observe(el))
+})
+
+// Error handling
+window.addEventListener("error", (e) => {
+  console.error("Application error:", e.error)
+  showToast("An error occurred. Please refresh the page.", "error")
+})
+
+console.log("Smart Crop Advisory System script loaded successfully")
+    </script>
+</body>
+</html>
