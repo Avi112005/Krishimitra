@@ -1559,7 +1559,44 @@ select:focus {
     transition-duration: 0.01ms !important;
   }
 }
-    </style>
+
+.speak-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--border); color: var(--muted-foreground);
+  border-radius: 50%; width: 1.75rem; height: 1.75rem; font-size: 0.7rem;
+  cursor: pointer; margin-top: 0.4rem; margin-left: 0.25rem;
+  transition: all 0.25s ease; flex-shrink: 0;
+}
+.speak-btn:hover { background-color: var(--primary); color: var(--primary-foreground); border-color: var(--primary); transform: scale(1.1); }
+.speak-btn.speaking { background-color: var(--primary); color: var(--primary-foreground); border-color: var(--primary); animation: speakPulse 1s ease-in-out infinite; }
+@keyframes speakPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(5, 150, 105, 0); }
+}
+.bot-message-wrapper { display: flex; align-items: flex-end; gap: 0.4rem; }
+
+#pestLanguage {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  color: var(--foreground);
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+#pestLanguage:hover {
+  border-color: var(--primary);
+}
+
+#pestLanguage:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(5,150,105,0.25);
+}
+
+  </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -1840,7 +1877,7 @@ select:focus {
                     <div class="chat-input-container">
                         <div class="chat-input">
                             <input type="text" id="messageInput" placeholder="Type your question here..." />
-                            <button class="send-btn" id="sendBtn">
+                            <button class="send-btn" id="sendBtn" type="button">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
@@ -1951,17 +1988,33 @@ select:focus {
 
                 <div class="detection-container">
                     <div class="upload-section">
-                        <div class="upload-area" id="uploadArea">
-                            <div class="upload-content">
-                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                <h3>Upload Crop Image</h3>
-                                <p>Drag and drop an image or click to browse</p>
-                                <input type="file" id="imageInput" accept="image/*" hidden>
-                                <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
-                                    Choose Image
-                                </button>
-                            </div>
-                        </div>
+                         <!-- Language Selector -->
+    <div style="margin-bottom:15px; text-align:center;">
+        <label style="margin-right:10px;">Select Language:</label>
+        <select id="pestLanguage">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="gu">Gujarati</option>
+            <option value="mr">Marathi</option>
+            <option value="ml">Malayalam</option>
+            <option value="ta">Tamil</option>
+        </select>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-content">
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <h3>Upload Crop Image</h3>
+            <p>Drag and drop an image or click to browse</p>
+
+            <input type="file" id="imageInput" accept="image/*" hidden>
+
+            <button class="btn btn-primary"
+                onclick="document.getElementById('imageInput').click()">
+                Choose Image
+            </button>
+        </div>
+    </div>
 
                         <div class="image-preview" id="imagePreview" style="display: none;">
                             <img id="previewImg" src="/placeholder.svg" alt="Preview">
@@ -2186,6 +2239,12 @@ select:focus {
 
     <script>
 
+const BACKEND_URL = "http://127.0.0.1:5000";
+
+speechSynthesis.onvoiceschanged = () => {
+  speechSynthesis.getVoices();
+};
+
 // Global Variables
 let currentPage = "home"
 let isDarkMode = false
@@ -2212,7 +2271,7 @@ function initializeApp() {
   showPage("home")
   loadUserPreferences()
   setupDragAndDrop()
-  console.log("Krishi Mitra initialized")
+  console.log("KrishiMitra initialized")
 }
 
 // Setup Event Listeners
@@ -2239,11 +2298,12 @@ function setupEventListeners() {
   const voiceBtn = document.getElementById("voiceBtn")
 
   if (messageInput && sendBtn) {
-    messageInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        sendMessage()
-      }
-    })
+    messageInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendMessage(e);
+  }
+});
     sendBtn.addEventListener("click", sendMessage)
   }
 
@@ -2370,36 +2430,95 @@ function toggleMobileNav() {
 function addMessageToChat(message, sender) {
   const chatMessages = document.getElementById("chatMessages");
   if (!chatMessages) return;
-
   const messageDiv = document.createElement("div");
   messageDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
-
   if (sender === "bot") {
+    const btnId = "speak-" + Date.now();
     messageDiv.innerHTML = `
       <div class="message-avatar"><i class="fas fa-robot"></i></div>
-      <div class="message-content"><p>${message}</p></div>
-    `;
+      <div class="bot-message-wrapper">
+        <div class="message-content"><p>${message}</p></div>
+        <button class="speak-btn" id="${btnId}" title="Listen" aria-label="Read aloud">
+          <i class="fas fa-volume-up"></i>
+        </button>
+      </div>`;
+    setTimeout(() => {
+      const btn = document.getElementById(btnId);
+      if (btn) btn.addEventListener("click", () => speakText(message, btn));
+    }, 0);
   } else {
     messageDiv.innerHTML = `
       <div class="message-avatar"><i class="fas fa-user"></i></div>
-      <div class="message-content"><p>${message}</p></div>
-    `;
+      <div class="message-content"><p>${message}</p></div>`;
   }
-
   chatMessages.appendChild(messageDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-async function sendMessage() {
+let currentSpeakBtn = null;
+let currentUtterance = null;
+
+async function speakText(text, btn) {
+
+  const cleanText = text.replace(/<[^>]*>/g, "");
+
+  let lang = "en";
+
+  if (/[\u0900-\u097F]/.test(cleanText)) lang = "hi";
+  else if (/[\u0C00-\u0C7F]/.test(cleanText)) lang = "te";
+  else if (/[\u0B80-\u0BFF]/.test(cleanText)) lang = "ta";
+
+  btn.classList.add("speaking");
+  btn.innerHTML = '<i class="fas fa-stop"></i>';
+
+  try {
+
+    const response = await fetch("/speak", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        text: cleanText,
+        lang: lang
+      })
+    });
+
+    const blob = await response.blob();
+    const audio = new Audio(URL.createObjectURL(blob));
+
+    audio.onended = () => {
+      btn.classList.remove("speaking");
+      btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    };
+
+    audio.play();
+
+  } catch (error) {
+
+    btn.classList.remove("speaking");
+    btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+
+    console.error("Speech error:", error);
+  }
+}
+
+async function sendMessage(e) {
+
+  // STOP browser refresh
+  if (e) e.preventDefault();
+
   const messageInput = document.getElementById("messageInput");
+  if (!messageInput) return;
+
   const message = messageInput.value.trim();
   if (!message) return;
 
-  addMessageToChat(message, "user");
   messageInput.value = "";
+  addMessageToChat(message, "user");
 
   try {
-    const response = await fetch("http://127.0.0.1:5000/chat", {
+    const response = await fetch(`${BACKEND_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
@@ -2407,6 +2526,7 @@ async function sendMessage() {
 
     const data = await response.json();
     addMessageToChat(data.reply, "bot");
+
   } catch (error) {
     addMessageToChat("⚠️ Error connecting to KrishiMitra server.", "bot");
     console.error(error);
@@ -2417,7 +2537,7 @@ async function sendQuickMessage(message) {
   addMessageToChat(message, "user");
 
   try {
-    const response = await fetch("http://127.0.0.1:5000/chat", {
+    const response = await fetch(`${BACKEND_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
@@ -2459,11 +2579,11 @@ async function toggleVoiceRecording() {
 
       showToast("🎙️ Transcribing speech with Groq Whisper...", "info");
 
-      try {
-        const response = await fetch("/transcribe", {
-          method: "POST",
-          body: formData,
-        });
+       try {
+    const response = await fetch(`${BACKEND_URL}/transcribe`, {
+      method: "POST",
+      body: formData,
+    });
 
         const data = await response.json();
         if (data.text) {
@@ -2596,50 +2716,64 @@ async function analyzeImage() {
 
   const file = imageInput.files[0];
   const formData = new FormData();
-  formData.append("file", file);
+formData.append("file", file);
+
+const lang = document.getElementById("pestLanguage").value;
+formData.append("lang", lang);
 
   imagePreview.style.display = "none";
   analysisProgress.style.display = "block";
   progressFill.style.width = "0%";
   progressText.textContent = "Initializing AI analysis...";
 
+ try {
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress += 25;
+    progressFill.style.width = progress + "%";
+    if (progress >= 100) clearInterval(progressInterval);
+  }, 500);
+
+  showToast("🧠 Analyzing image with Gemini Vision...", "info");
+
+  // Send image to backend
+  const response = await fetch(`${BACKEND_URL}/detect_pest`, {
+    method: "POST",
+    body: formData,
+  });
+
+  // Read raw response (can be HTML if backend failed)
+  const rawText = await response.text();
+  let data;
+
+  // Try parsing JSON safely
   try {
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += 25;
-      progressFill.style.width = progress + "%";
-      if (progress >= 100) clearInterval(progressInterval);
-    }, 500);
-
-    showToast("🧠 Analyzing image with Gemini Vision...", "info");
-
-    const response = await fetch("/detect_pest", {
-      method: "POST",
-      body: formData,
-    });
-
-    const text = await response.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      console.error("Invalid JSON:", text);
-      throw new Error("Server returned invalid JSON");
-    }
-
-    if (!response.ok || data.error) {
-      throw new Error(data.error || "Server Error");
-    }
-
-    progressFill.style.width = "100%";
-    progressText.textContent = "Analysis complete!";
-    setTimeout(() => {
-      displayPestResults(data);
-    }, 800);
-  } catch (error) {
-    console.error("Pest analysis error:", error);
-    showToast("❌ Pest analysis failed: " + error.message, "error");
+    data = JSON.parse(rawText);
+  } catch (err) {
+    console.error("Invalid JSON from backend:", rawText);
+    throw new Error(
+      rawText.includes("Error") || rawText.includes("NOT_FOUND")
+        ? "Server error or invalid route"
+        : "Invalid JSON response"
+    );
   }
+
+  // Handle backend-side errors
+  if (!response.ok || data.error) {
+    throw new Error(data.error || "Pest detection failed");
+  }
+
+  // Success handling
+  progressFill.style.width = "100%";
+  progressText.textContent = "Analysis complete!";
+  setTimeout(() => {
+    displayPestResults(data);
+  }, 800);
+
+} catch (error) {
+  console.error("Pest analysis error:", error);
+  showToast("❌ Pest analysis failed: " + error.message, "error");
+}
 }
 
 // Display pest detection results
@@ -2677,15 +2811,6 @@ function showTreatment(type) {
 
   document.querySelector(`[onclick="showTreatment('${type}')"]`).classList.add("active");
   document.getElementById(`${type}Treatment`).classList.add("active");
-}
-
-// Toast Notification
-function showToast(message, type) {
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3500);
 }
 
 // Market Price Chart
@@ -2843,7 +2968,7 @@ window.addEventListener("error", (e) => {
   showToast("An error occurred. Please refresh the page.", "error")
 })
 
-console.log("Krishi Mitra script loaded successfully")
+console.log("KrishiMitra script loaded successfully")
     </script>
 </body>
 </html>
