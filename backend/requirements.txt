@@ -3,5 +3,7 @@ flask-cors
 groq
 python-dotenv
 google-generativeai
+google-cloud-texttospeech
+psycopg2-binary
 Pillow
-gTTS
+requests
