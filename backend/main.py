@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from google.cloud import texttospeech
+import psycopg2
 import requests
 from urllib.parse import quote
 from flask import send_file
@@ -15,16 +16,25 @@ from datetime import datetime
 from PIL import Image
 import traceback
 
-# ─────────────────────────────────────────────
 # Load environment variables
-# ─────────────────────────────────────────────
 load_dotenv()
+
+# PostgreSQL connection
+conn = psycopg2.connect(
+    host=os.getenv("DB_HOST"),
+    database=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS"),
+    port=os.getenv("DB_PORT")
+)
+
+cursor = conn.cursor()
+
 app = Flask(__name__, static_folder=".")
 CORS(app)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials.json"
-# ─────────────────────────────────────────────
+
 # API Keys
-# ─────────────────────────────────────────────
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("Missing GROQ_API_KEY in .env")
@@ -36,9 +46,7 @@ if not GEMINI_API_KEY:
 genai.configure(api_key=GEMINI_API_KEY)
 tts_client = texttospeech.TextToSpeechClient()
 
-# ─────────────────────────────────────────────
 # Directory setup
-# ─────────────────────────────────────────────
 UPLOADS_DIR = "uploaded_images"
 LOG_FILES = ["chat_logs.txt", "pest_uploads.txt", "system.log"]
 
@@ -49,9 +57,7 @@ for file_name in LOG_FILES:
         with open(path, "w", encoding="utf-8") as f:
             f.write("")
 
-# ─────────────────────────────────────────────
 # Logging helpers
-# ─────────────────────────────────────────────
 def log_event(filename, message, file="system.log"):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     path = os.path.join(UPLOADS_DIR, file)
@@ -64,9 +70,7 @@ def log_chat_message(user_message, status):
 def log_pest_upload(filename, status):
     log_event("Pest", f"{filename} | Status: {status}", "pest_uploads.txt")
 
-# ─────────────────────────────────────────────
 # Routes
-# ─────────────────────────────────────────────
 @app.route("/", methods=["GET"])
 def home():
     return send_from_directory("../frontend", "index.html")
@@ -77,16 +81,20 @@ def health():
     return jsonify({"status": "ok"}), 200
 
 
-# ─────────────────────────────────────────────
 # Chat (Groq)
-# ─────────────────────────────────────────────
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
         data = request.get_json(force=True)
+
         user_message = (data.get("message") or "").strip()
+        session_id = data.get("session_id")
+
         if not user_message:
             return jsonify({"reply": "Please enter a valid message."}), 400
+
+        if not session_id:
+            session_id = "default"
 
         system_prompt = (
             "You are KrishiMitra, an AI assistant for farmers. "
@@ -94,31 +102,61 @@ def chat():
             "If the user speaks Hindi, always reply in Hindi (not Urdu). "
             "Politely redirect users to farming topics if the query is off-topic. "
             "Always respond in the language the user uses."
+            "Always reply in the SAME language as the user's LAST message. "
+            "Do not switch languages unless the user switches language."
         )
+
+        # save user message
+        cursor.execute(
+            "INSERT INTO chat_messages (session_id, role, message) VALUES (%s,%s,%s)",
+            (session_id, "user", user_message)
+        )
+        conn.commit()
+
+        # load previous messages
+        cursor.execute(
+            """
+            SELECT role, message
+            FROM chat_messages
+            WHERE session_id=%s
+            ORDER BY id DESC
+            LIMIT 8
+            """,
+            (session_id,)
+        )
+
+        rows = cursor.fetchall()
+
+        history = []
+        for r in reversed(rows):
+            history.append({
+                "role": r[0],
+                "content": r[1]
+            })
 
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
-            temperature=0.7,
-            max_tokens=500,
+            messages=[{"role": "system", "content": system_prompt}] + history,
+            temperature=0.5,
+            max_tokens=900,
         )
 
         ai_reply = response.choices[0].message.content
-        log_chat_message(user_message, "Response OK")
-        return jsonify({"reply": ai_reply}), 200
+
+        # save AI reply
+        cursor.execute(
+            "INSERT INTO chat_messages (session_id, role, message) VALUES (%s,%s,%s)",
+            (session_id, "assistant", ai_reply)
+        )
+        conn.commit()
+
+        return jsonify({"reply": ai_reply})
 
     except Exception as e:
         traceback.print_exc()
-        log_chat_message(str(e), "Chat generation failed")
         return jsonify({"reply": "Error processing your message."}), 500
 
-
-# ─────────────────────────────────────────────
 # Audio Transcription (Groq Whisper)
-# ─────────────────────────────────────────────
 @app.route("/transcribe", methods=["POST"])
 def transcribe_audio():
     try:
@@ -185,12 +223,43 @@ def speak():
 
     return send_file(io.BytesIO(response.audio_content), mimetype="audio/mpeg")
 
-# ─────────────────────────────────────────────
+# Chat History Retrieval
+@app.route("/chat_history", methods=["GET"])
+def chat_history():
+    try:
+        session_id = request.args.get("session_id")
+
+        cursor.execute(
+            """
+            SELECT role, message
+            FROM chat_messages
+            WHERE session_id=%s
+            ORDER BY id ASC
+            LIMIT 50
+            """,
+            (session_id,)
+        )
+
+        rows = cursor.fetchall()
+
+        history = []
+        for r in rows:
+            history.append({
+                "role": r[0],
+                "message": r[1]
+            })
+
+        return jsonify(history)
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify([])
+
 # Pest Detection (Gemini Vision)
-# ─────────────────────────────────────────────
 @app.route("/detect_pest", methods=["POST"])
 def detect_pest():
     try:
+
         if "file" not in request.files:
             return jsonify({"error": "No file uploaded"}), 400
 
@@ -204,7 +273,10 @@ def detect_pest():
         saved_path = os.path.join(UPLOADS_DIR, filename)
         file.save(saved_path)
 
-        # detect selected language
+        # session id from frontend
+        session_id = request.form.get("session_id", "default")
+
+        # selected language
         lang = request.form.get("lang", "en")
 
         language_instruction = {
@@ -253,6 +325,26 @@ Return strictly JSON:
 
         pest_data = json.loads(text)
 
+        # Save detection to PostgreSQL
+        cursor.execute(
+            """
+            INSERT INTO pest_detections
+            (session_id, pest_name, confidence, description, severity, image_path)
+            VALUES (%s,%s,%s,%s,%s,%s)
+            """,
+            (
+                session_id,
+                pest_data.get("pest_name"),
+                pest_data.get("confidence"),
+                pest_data.get("description"),
+                pest_data.get("severity"),
+                saved_path
+            )
+        )
+
+        conn.commit()
+
+        # remove local image
         os.remove(saved_path)
 
         return jsonify(pest_data), 200
@@ -261,9 +353,37 @@ Return strictly JSON:
         print("Pest detection error:", e)
         return jsonify({"error": "Pest detection failed"}), 500
 
-# ─────────────────────────────────────────────
+# Pest Detection Statistics
+@app.route("/pest_stats", methods=["GET"])
+def pest_stats():
+    try:
+
+        cursor.execute(
+            """
+            SELECT pest_name, COUNT(*) 
+            FROM pest_detections
+            GROUP BY pest_name
+            ORDER BY COUNT(*) DESC
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        stats = []
+
+        for r in rows:
+            stats.append({
+                "pest": r[0],
+                "count": r[1]
+            })
+
+        return jsonify(stats)
+
+    except Exception as e:
+        print("Stats error:", e)
+        return jsonify({"error": "Failed to load stats"}), 500
+
 # Run Server
-# ─────────────────────────────────────────────
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(

@@ -2100,6 +2100,12 @@ select:focus {
                                     </ul>
                                 </div>
                             </div>
+                        <div style="text-align:center; margin-top:20px;">
+                        <button class="btn btn-primary" onclick="scanAnotherImage()">
+                        <i class="fas fa-upload"></i>
+                         Scan Another Image
+                        </button>
+                        </div>    
                         </div>
                     </div>
                 </div>
@@ -2239,6 +2245,13 @@ select:focus {
 
     <script>
 
+let sessionId = localStorage.getItem("session_id");
+
+if (!sessionId) {
+  sessionId = crypto.randomUUID();
+  localStorage.setItem("session_id", sessionId);
+}
+
 const BACKEND_URL = "http://127.0.0.1:5000";
 
 speechSynthesis.onvoiceschanged = () => {
@@ -2265,13 +2278,22 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners()
   initializePriceChart()
   checkSystemTheme()
+  loadChatHistory()
 })
 
 function initializeApp() {
-  showPage("home")
-  loadUserPreferences()
-  setupDragAndDrop()
-  console.log("KrishiMitra initialized")
+
+  const savedPage = localStorage.getItem("currentPage");
+
+  if (savedPage) {
+    showPage(savedPage);
+  } else {
+    showPage("home");
+  }
+
+  loadUserPreferences();
+  setupDragAndDrop();
+  console.log("KrishiMitra initialized");
 }
 
 // Setup Event Listeners
@@ -2351,6 +2373,7 @@ function setupEventListeners() {
 
 // Page Navigation
 function showPage(pageId) {
+
   pages.forEach((page) => {
     page.classList.remove("active")
   })
@@ -2359,6 +2382,7 @@ function showPage(pageId) {
   if (targetPage) {
     targetPage.classList.add("active")
     currentPage = pageId
+    localStorage.setItem("currentPage", pageId)
   }
 
   navLinks.forEach((link) => {
@@ -2425,6 +2449,19 @@ function toggleMobileNav() {
   navMenu.classList.toggle("active")
 }
 
+// Message Formatting
+function formatMessage(text) {
+
+  text = text.replace(/\n/g, "<br>");
+
+  text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+  text = text.replace(/(\d+\.)/g, "<br><strong>$1</strong>");
+
+  return text;
+
+}
+
 // Chatbot Functionality
 
 function addMessageToChat(message, sender) {
@@ -2437,7 +2474,7 @@ function addMessageToChat(message, sender) {
     messageDiv.innerHTML = `
       <div class="message-avatar"><i class="fas fa-robot"></i></div>
       <div class="bot-message-wrapper">
-        <div class="message-content"><p>${message}</p></div>
+        <div class="message-content">${formatMessage(message)}</p></div>
         <button class="speak-btn" id="${btnId}" title="Listen" aria-label="Read aloud">
           <i class="fas fa-volume-up"></i>
         </button>
@@ -2449,18 +2486,25 @@ function addMessageToChat(message, sender) {
   } else {
     messageDiv.innerHTML = `
       <div class="message-avatar"><i class="fas fa-user"></i></div>
-      <div class="message-content"><p>${message}</p></div>`;
+      <div class="message-content">${formatMessage(message)}</p></div>`;
   }
   chatMessages.appendChild(messageDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+let currentAudio = null;
 let currentSpeakBtn = null;
-let currentUtterance = null;
 
 async function speakText(text, btn) {
 
-  const cleanText = text.replace(/<[^>]*>/g, "");
+  let cleanText = text.replace(/<[^>]*>/g, "");
+
+// Remove markdown symbols like ** and *
+cleanText = cleanText.replace(/\*\*/g, "");
+cleanText = cleanText.replace(/\*/g, "");
+
+// Remove numbered list dots (optional)
+cleanText = cleanText.replace(/(\d+)\./g, "$1");
 
   let lang = "en";
 
@@ -2468,12 +2512,31 @@ async function speakText(text, btn) {
   else if (/[\u0C00-\u0C7F]/.test(cleanText)) lang = "te";
   else if (/[\u0B80-\u0BFF]/.test(cleanText)) lang = "ta";
 
+  // If audio already playing → STOP
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+
+    if (currentSpeakBtn) {
+      currentSpeakBtn.classList.remove("speaking");
+      currentSpeakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    }
+
+    currentAudio = null;
+
+    // If clicking same button → just stop
+    if (currentSpeakBtn === btn) {
+      currentSpeakBtn = null;
+      return;
+    }
+  }
+
   btn.classList.add("speaking");
   btn.innerHTML = '<i class="fas fa-stop"></i>';
 
   try {
 
-    const response = await fetch("/speak", {
+    const response = await fetch(`${BACKEND_URL}/speak`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -2487,9 +2550,14 @@ async function speakText(text, btn) {
     const blob = await response.blob();
     const audio = new Audio(URL.createObjectURL(blob));
 
+    currentAudio = audio;
+    currentSpeakBtn = btn;
+
     audio.onended = () => {
       btn.classList.remove("speaking");
       btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+      currentAudio = null;
+      currentSpeakBtn = null;
     };
 
     audio.play();
@@ -2499,6 +2567,9 @@ async function speakText(text, btn) {
     btn.classList.remove("speaking");
     btn.innerHTML = '<i class="fas fa-volume-up"></i>';
 
+    currentAudio = null;
+    currentSpeakBtn = null;
+
     console.error("Speech error:", error);
   }
 }
@@ -2507,6 +2578,19 @@ async function sendMessage(e) {
 
   // STOP browser refresh
   if (e) e.preventDefault();
+
+  // Stop any speaking audio
+if (currentAudio) {
+  currentAudio.pause();
+  currentAudio.currentTime = 0;
+  currentAudio = null;
+}
+
+if (currentSpeakBtn) {
+  currentSpeakBtn.classList.remove("speaking");
+  currentSpeakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+  currentSpeakBtn = null;
+}
 
   const messageInput = document.getElementById("messageInput");
   if (!messageInput) return;
@@ -2521,7 +2605,10 @@ async function sendMessage(e) {
     const response = await fetch(`${BACKEND_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({
+    message: message,
+    session_id: sessionId
+    }),
     });
 
     const data = await response.json();
@@ -2534,13 +2621,30 @@ async function sendMessage(e) {
 }
 
 async function sendQuickMessage(message) {
+  
+  // Stop any speaking audio
+if (currentAudio) {
+  currentAudio.pause();
+  currentAudio.currentTime = 0;
+  currentAudio = null;
+}
+
+if (currentSpeakBtn) {
+  currentSpeakBtn.classList.remove("speaking");
+  currentSpeakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+  currentSpeakBtn = null;
+}
+
   addMessageToChat(message, "user");
 
   try {
     const response = await fetch(`${BACKEND_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({
+  message: message,
+  session_id: sessionId
+}),
     });
 
     const data = await response.json();
@@ -2701,6 +2805,25 @@ function removeImage() {
   imageInput.value = "";
 }
 
+// Load chat history on page load
+async function loadChatHistory() {
+
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/chat_history?session_id=${sessionId}`
+    );
+
+    const history = await response.json();
+
+    history.forEach(msg => {
+      addMessageToChat(msg.message, msg.role === "user" ? "user" : "bot");
+    });
+
+  } catch (error) {
+    console.error("Failed to load history:", error);
+  }
+}
+
 // Analyze Image for Pest Detection
 async function analyzeImage() {
   const imageInput = document.getElementById("imageInput");
@@ -2717,6 +2840,7 @@ async function analyzeImage() {
   const file = imageInput.files[0];
   const formData = new FormData();
 formData.append("file", file);
+formData.append("session_id", sessionId);
 
 const lang = document.getElementById("pestLanguage").value;
 formData.append("lang", lang);
@@ -2799,6 +2923,26 @@ function displayPestResults(data) {
   document.getElementById("preventionTips").innerHTML = toList(data.prevention_tips);
 
   showToast("✅ Pest analysis completed successfully!", "success");
+}
+
+function scanAnotherImage() {
+
+  const uploadArea = document.getElementById("uploadArea");
+  const imagePreview = document.getElementById("imagePreview");
+  const resultsSection = document.getElementById("resultsSection");
+  const analysisProgress = document.getElementById("analysisProgress");
+  const imageInput = document.getElementById("imageInput");
+
+  // Reset UI
+  resultsSection.style.display = "none";
+  imagePreview.style.display = "none";
+  analysisProgress.style.display = "none";
+  uploadArea.style.display = "block";
+
+  // Clear previous image
+  imageInput.value = "";
+
+  showToast("Upload another crop image to analyze.", "info");
 }
 
 //Switch between treatment tabs
