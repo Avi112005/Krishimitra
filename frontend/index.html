@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krishi Mitra</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -437,38 +438,129 @@ body {
 }
 
 /* Weather Card */
-.weather-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.weather-content{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:60px;
+  flex-wrap:wrap;
+}
+.skeleton {
+  height: 50px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    #1e293b 25%,
+    #334155 50%,
+    #1e293b 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.table-row.skeleton {
+  height: 50px;
+}
+
+.weather-city{
+  font-size:18px;
+  color:var(--muted-foreground);
+  margin-bottom:6px;
 }
 
 .weather-main {
   text-align: center;
 }
 
-.temperature {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--primary);
+.temperature{
+  font-size:3rem;
+  font-weight:700;
+  color:var(--primary);
 }
 
-.weather-desc {
-  color: var(--muted-foreground);
-  margin-top: 0.5rem;
+.weather-desc{
+  margin-top:6px;
+  font-weight:500;
+  color:var(--foreground);
+  opacity:0.9;
 }
 
 .weather-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display:flex;
+  gap:30px;
+  align-items:center;
 }
 
 .weather-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--muted-foreground);
+  justify-content: center;
+  background: var(--muted);
+  padding: 16px 22px;
+  border-radius: 12px;
+  min-width: 130px;
+  height: 90px;
+}
+
+.weather-item span {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.weather-item:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow);
+}
+
+.weather-item i{
+  color:var(--primary);
+  margin-bottom:5px;
+  font-size:18px;
+}
+
+.weather-item span{
+  font-size:14px;
+  font-weight:600;
+}
+
+/* DASHBOARD WEATHER CARD */
+.dash-weather-content{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.dash-weather-details{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.dash-weather-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:var(--muted);
+  padding:12px;
+  border-radius:12px;
+  width:140px;
+}
+
+.dash-weather-item i{
+  color:var(--primary);
+  margin-bottom:4px;
+}
+
+.dash-weather-item span{
+  font-size:14px;
+  font-weight:600;
 }
 
 /* Recommendations */
@@ -541,9 +633,152 @@ body {
   border-bottom: none;
 }
 
+#cropSearch {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+
+  background: #1e293b;
+  color: #e2e8f0;
+
+  border: 1px solid #334155;
+  border-radius: 10px;
+
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+#cropSearch::placeholder {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+
+  background: #1e293b;
+  padding: 0 14px;
+
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  flex: 1;
+}
+
+.search-icon {
+  color: #94a3b8;
+}
+.input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 16px 12px 8px;
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  font-size: 15px;
+}
+
+.input-wrapper label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 14px;
+  pointer-events: none;
+  transition: 0.2s ease;
+}
+
+.crop-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+
+  max-height: 220px;
+  overflow-y: auto;
+
+  display: none;
+  z-index: 1000;
+}
+
+.crop-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  color: #e2e8f0;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.crop-item:hover {
+  background: #334155;
+  color: #22c55e;
+}
+
+/* floating effect */
+.input-wrapper input:focus + label,
+.input-wrapper input:not(:placeholder-shown) + label {
+  top: 6px;
+  font-size: 11px;
+  color: #22c55e;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  display: none;
+}
+
+.search-box:hover .clear-btn {
+  display: block;
+}
+
 .crop-name {
   font-weight: 600;
+  font-size: 14px;
   color: var(--foreground);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.market-badge {
+  background: #16a34a;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  max-width: 150px;
+  line-height: 1.3;
 }
 
 .price {
@@ -576,6 +811,136 @@ body {
 .dark .change.negative {
   background-color: #7f1d1d;
   color: #fecaca;
+}
+
+/* UNIFIED TABLE GRID */
+.table-header,
+.modern-row {
+  display: grid;
+  grid-template-columns: 2fr 1.6fr 2.2fr 1.6fr;
+  align-items: center;
+}
+
+/* HEADER */
+.table-header {
+  padding: 14px 18px;
+  background: var(--muted);
+  border-radius: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ROW */
+.modern-row {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: all 0.2s ease;
+  gap: 16px;
+}
+
+.modern-row:hover {
+  background: var(--muted);
+  border-radius: 10px;
+}
+
+/* FORCE ALIGNMENT */
+.table-header > div,
+.modern-row > div {
+  display: flex;
+  align-items: center;
+}
+/* Crop column */
+.crop-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.crop-label {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary);
+
+  margin-top: -5px;
+  margin-bottom: 10px;
+
+  letter-spacing: 0.5px;
+}
+
+.crop-icon {
+  font-size: 20px;
+}
+
+/* Price column */
+.price-cell {
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+  padding-right: 10px;
+}
+
+/* Market + State */
+.market-cell {
+  font-weight: 500;
+}
+
+.state-cell {
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.modern-price-item {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 2fr;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+
+.modern-price-item:last-child {
+  border-bottom: none;
+}
+
+/* LEFT */
+.price-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crop-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.modern-price-item:hover {
+  background: var(--muted);
+  border-radius: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* CENTER */
+.price-center {
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+/* RIGHT */
+.price-right {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  text-align: right;
+  line-height: 1.4;
+  white-space: normal;
+  overflow: visible;
+  word-break: break-word;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* Alerts */
@@ -864,24 +1229,6 @@ body {
 .price-table {
   display: flex;
   flex-direction: column;
-}
-
-.table-header,
-.table-row {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr;
-  gap: 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.table-header {
-  font-weight: 600;
-  color: var(--foreground);
-  background-color: var(--muted);
-  padding: 1rem;
-  border-radius: var(--radius);
-  margin-bottom: 0.5rem;
 }
 
 .table-row:hover {
@@ -1615,6 +1962,10 @@ select:focus {
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard</span>
                 </a>
+                <a href="#weather" class="nav-link" data-page="weather">
+                  <i class="fas fa-cloud-sun"></i>
+                  <span>Weather</span>
+                </a>
                 <a href="#chatbot" class="nav-link" data-page="chatbot">
                     <i class="fas fa-robot"></i>
                     <span>AI Assistant</span>
@@ -1717,27 +2068,41 @@ select:focus {
                 </div>
 
                 <div class="dashboard-grid">
-                    <div class="dashboard-card weather-card">
-                        <div class="card-header">
-                            <h3><i class="fas fa-cloud-sun"></i> Weather Today</h3>
-                        </div>
-                        <div class="weather-content">
-                            <div class="weather-main">
-                                <div class="temperature">28°C</div>
-                                <div class="weather-desc">Partly Cloudy</div>
-                            </div>
-                            <div class="weather-details">
-                                <div class="weather-item">
-                                    <i class="fas fa-eye"></i>
-                                    <span>Humidity: 65%</span>
-                                </div>
-                                <div class="weather-item">
-                                    <i class="fas fa-wind"></i>
-                                    <span>Wind: 12 km/h</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="dashboard-card weather-card" onclick="openWeatherPage()">
+
+<div class="card-header">
+<h3><i class="fas fa-cloud-sun"></i> Weather Today</h3>
+</div>
+
+<div class="dash-weather-content">
+
+<div class="weather-main">
+<div class="weather-city" id="dashCity">--</div>
+<div class="temperature" id="dashTemp">--</div>
+<div class="weather-desc" id="dashCondition">--</div>
+</div>
+
+<div class="dash-weather-details">
+
+<div class="dash-weather-item">
+<i class="fas fa-eye"></i>
+<span id="dashHumidity">Humidity: --</span>
+</div>
+
+<div class="dash-weather-item">
+<i class="fas fa-wind"></i>
+<span id="dashWind">Wind: --</span>
+</div>
+
+<div class="dash-weather-item">
+<i class="fas fa-cloud-rain"></i>
+<span id="dashRain">Rain: --</span>
+</div>
+
+</div>
+
+</div>
+</div>
 
                     <div class="dashboard-card recommendations-card">
                         <div class="card-header">
@@ -1770,32 +2135,16 @@ select:focus {
 
                     <div class="dashboard-card market-card">
                         <div class="card-header">
-                            <h3><i class="fas fa-chart-line"></i> Market Prices</h3>
+                            <h3><i class="fas fa-chart-line"></i> Top Market Prices Today</h3>
                         </div>
-                        <div class="market-prices">
-                            <div class="price-item">
-                                <span class="crop-name">Wheat</span>
-                                <span class="price">₹2,150/quintal</span>
-                                <span class="change positive">+2.5%</span>
-                            </div>
-                            <div class="price-item">
-                                <span class="crop-name">Rice</span>
-                                <span class="price">₹1,890/quintal</span>
-                                <span class="change negative">-1.2%</span>
-                            </div>
-                            <div class="price-item">
-                                <span class="crop-name">Tomato</span>
-                                <span class="price">₹45/kg</span>
-                                <span class="change positive">+5.8%</span>
-                            </div>
+                        <div class="market-prices" id="marketPricesContainer"></div>
                         </div>
-                    </div>
 
                     <div class="dashboard-card alerts-card">
                         <div class="card-header">
                             <h3><i class="fas fa-bell"></i> Alerts & Notifications</h3>
                         </div>
-                        <div class="alerts-list">
+                        <div class="alerts-list" id="alertsContainer">
                             <div class="alert-item">
                                 <i class="fas fa-cloud-rain alert-icon"></i>
                                 <div class="alert-content">
@@ -1817,6 +2166,158 @@ select:focus {
                 </div>
             </div>
         </section>
+
+  <!-- Weather Page -->
+        <section id="weather" class="page">
+  <div class="container">
+
+    <div class="page-header">
+      <h1>Weather Details</h1>
+      <p>Check weather for any city in India</p>
+    </div>
+
+    <!-- City Selector -->
+    <div class="dashboard-card" style="margin-bottom:20px">
+
+  <div class="card-header">
+    <h3><i class="fas fa-search-location"></i> Search City Weather</h3>
+  </div>
+
+  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+
+<div style="position:relative; flex:1">
+
+<input 
+  type="text"
+  id="cityInput"
+  placeholder="Search city (Delhi, Mumbai, Surat...)"
+  autocomplete="off"
+  style="
+    width:100%;
+    padding:12px;
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    background:var(--input);
+    color:var(--foreground);
+    font-size:0.95rem;
+  "
+>
+
+<div id="citySuggestions" style="
+  position:absolute;
+  top:100%;
+  left:0;
+  right:0;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  max-height:200px;
+  overflow-y:auto;
+  display:none;
+  z-index:999;
+"></div>
+
+</div>
+
+<button class="btn btn-primary" onclick="getWeatherByCity()">
+  <i class="fas fa-cloud-sun"></i>
+  Check Weather
+</button>
+
+<button class="btn btn-secondary" onclick="getWeatherByLocation()">
+<i class="fas fa-location-crosshairs"></i>
+Use My Location
+</button>
+
+</div>
+    <div class="dashboard-card">
+
+  <div class="card-header">
+    <h3><i class="fas fa-cloud-sun"></i> Current Weather</h3>
+  </div>
+
+  <div class="weather-content">
+
+    <div class="weather-main">
+      <div class="weather-city" id="weatherCity">Select City</div>
+      <div class="temperature" id="weatherTemp">--</div>
+      <div class="weather-desc" id="weatherCondition">--</div>
+    </div>
+
+    <div class="weather-details">
+
+      <div class="weather-item">
+        <i class="fas fa-temperature-high"></i>
+        <span>Feels Like: <span id="feelsLike">--</span></span>
+      </div>
+
+      <div class="weather-item">
+       <i class="fas fa-cloud-rain"></i>
+      <span id="weatherRain">Rain: --</span>
+      </div>
+
+      <div class="weather-item">
+        <i class="fas fa-tint"></i>
+        <span id="weatherHumidity">Humidity: --</span>
+      </div>
+
+      <div class="weather-item">
+        <i class="fas fa-wind"></i>
+        <span id="weatherWind">Wind: --</span>
+      </div>
+
+      <div class="weather-item">
+<i class="fas fa-sun"></i>
+<span id="sunriseTime">Sunrise: --</span>
+</div>
+
+<div class="weather-item">
+<i class="fas fa-moon"></i>
+<span id="sunsetTime">Sunset: --</span>
+</div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="dashboard-card" style="margin-top:20px">
+
+  <div class="card-header">
+    <h3><i class="fas fa-seedling"></i> Weather Insights</h3>
+  </div>
+
+  <!--Weather Insights -->
+  <div id="weatherInsights" style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:15px;
+  ">
+
+  </div>
+
+</div>
+
+<!-- Forecast Page -->
+<div class="dashboard-card" style="margin-top:20px">
+
+  <div class="card-header">
+    <h3><i class="fas fa-calendar-alt"></i> 3 Day Forecast</h3>
+  </div>
+
+  <div id="forecastContainer" style="
+      display:flex;
+      gap:20px;
+      justify-content:space-between;
+      flex-wrap:wrap;
+  ">
+  </div>
+
+</div>
+
+  </div>
+</section>
 
         <!-- Chatbot Page -->
         <section id="chatbot" class="page">
@@ -1895,83 +2396,25 @@ select:focus {
                 </div>
 
                 <div class="market-controls">
-                    <div class="market-filters">
-                        <select id="cropFilter" class="filter-select">
-                            <option value="all">All Crops</option>
-                            <option value="cereals">Cereals</option>
-                            <option value="vegetables">Vegetables</option>
-                            <option value="fruits">Fruits</option>
-                        </select>
-                        <select id="regionFilter" class="filter-select">
-                            <option value="all">All Regions</option>
-                            <option value="north">North India</option>
-                            <option value="south">South India</option>
-                            <option value="west">West India</option>
-                            <option value="east">East India</option>
-                        </select>
-                    </div>
+                    <div class="search-box">
+  <span class="search-icon">🔍</span>
+  <div class="input-wrapper">
+    <input id="cropSearch" placeholder=" " />
+    <label>Search crop (e.g. Wheat, Rice, Onion)</label>
+  </div>
+  <div id="cropDropdown" class="crop-dropdown"></div>
+</div>
                 </div>
 
                 <div class="market-content">
                     <div class="price-chart-container">
                         <h3>Price Trends</h3>
+                        <div id="currentCrop" class="crop-label">Wheat</div>
                         <canvas id="priceChart" style="max-height: 300px;"></canvas>
                     </div>
 
-                    <div class="price-table-container">
-                        <h3>Current Prices</h3>
-                        <div class="price-table">
-                            <div class="table-header">
-                                <div class="table-cell">Crop</div>
-                                <div class="table-cell">Price</div>
-                                <div class="table-cell">Change</div>
-                                <div class="table-cell">Market</div>
-                            </div>
-                            <div class="table-row">
-                                <div class="table-cell">
-                                    <i class="fas fa-seedling crop-icon"></i>
-                                    Wheat
-                                </div>
-                                <div class="table-cell">₹2,150/quintal</div>
-                                <div class="table-cell positive">+2.5%</div>
-                                <div class="table-cell">Delhi</div>
-                            </div>
-                            <div class="table-row">
-                                <div class="table-cell">
-                                    <i class="fas fa-seedling crop-icon"></i>
-                                    Rice
-                                </div>
-                                <div class="table-cell">₹1,890/quintal</div>
-                                <div class="table-cell negative">-1.2%</div>
-                                <div class="table-cell">Mumbai</div>
-                            </div>
-                            <div class="table-row">
-                                <div class="table-cell">
-                                    <i class="fas fa-apple-alt crop-icon"></i>
-                                    Tomato
-                                </div>
-                                <div class="table-cell">₹45/kg</div>
-                                <div class="table-cell positive">+5.8%</div>
-                                <div class="table-cell">Bangalore</div>
-                            </div>
-                            <div class="table-row">
-                                <div class="table-cell">
-                                    <i class="fas fa-carrot crop-icon"></i>
-                                    Onion
-                                </div>
-                                <div class="table-cell">₹32/kg</div>
-                                <div class="table-cell negative">-3.1%</div>
-                                <div class="table-cell">Pune</div>
-                            </div>
-                            <div class="table-row">
-                                <div class="table-cell">
-                                    <i class="fas fa-seedling crop-icon"></i>
-                                    Corn
-                                </div>
-                                <div class="table-cell">₹1,750/quintal</div>
-                                <div class="table-cell positive">+1.8%</div>
-                                <div class="table-cell">Hyderabad</div>
-                            </div>
+                      <div class="price-table" id="priceTable"></div>
+                            
                         </div>
                     </div>
                 </div>
@@ -2245,6 +2688,19 @@ select:focus {
 
     <script>
 
+let allCrops = [];
+const MAIN_CROPS = [
+  "Wheat",
+  "Rice",
+  "Onion",
+  "Potato",
+  "Tomato",
+  "Maize",
+  "Apple",
+  "Sugarcane",
+  "Soybean",
+  "Groundnut"
+];
 let sessionId = localStorage.getItem("session_id");
 
 if (!sessionId) {
@@ -2263,6 +2719,7 @@ let currentPage = "home"
 let isDarkMode = false
 let isRecording = false
 let priceChart = null
+let marketController = null;
 
 // DOM Elements
 const navLinks = document.querySelectorAll(".nav-link")
@@ -2276,9 +2733,11 @@ const toast = document.getElementById("toast")
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp()
   setupEventListeners()
-  initializePriceChart()
+  loadInitialWeather()
+  loadPriceTrend("Wheat")
   checkSystemTheme()
   loadChatHistory()
+  loadAllCrops();
 })
 
 function initializeApp() {
@@ -2293,6 +2752,12 @@ function initializeApp() {
 
   loadUserPreferences();
   setupDragAndDrop();
+  // LOAD SAVED WEATHER CITY
+ const savedCity = localStorage.getItem("weatherCity");
+
+if (savedCity) {
+  document.getElementById("cityInput").value = savedCity;
+}
   console.log("KrishiMitra initialized");
 }
 
@@ -2314,6 +2779,97 @@ function setupEventListeners() {
       navMenu.classList.remove("active")
     }
   })
+
+const cropSearch = document.getElementById("cropSearch");
+
+if (cropSearch) {
+  let timer;
+
+  cropSearch.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+
+    const value = cropSearch.value.trim();
+
+    if (!value) {
+      loadMarketPrices("ALL");
+      loadPriceTrend("Wheat");
+      return;
+    }
+
+    loadMarketPrices(value);
+    loadPriceTrend(value);
+  }
+});
+}
+const input = document.getElementById("cropSearch");
+const dropdown = document.getElementById("cropDropdown");
+
+// helper → single source of truth
+function renderDropdown(list) {
+  dropdown.innerHTML = list.map(crop =>
+    `<div class="crop-item">${crop}</div>`
+  ).join("");
+
+  dropdown.style.display = list.length ? "block" : "none";
+}
+
+input.addEventListener("focus", () => {
+  if (!MAIN_CROPS.length) return;
+
+  renderDropdown(MAIN_CROPS);
+});
+
+if (input && dropdown) {
+
+  input.addEventListener("input", () => {
+
+    const value = input.value.toLowerCase().trim();
+
+    if (!value) {
+      renderDropdown(MAIN_CROPS);
+      return;
+    }
+
+    const mainMatches = MAIN_CROPS.filter(crop =>
+      crop.toLowerCase().includes(value)
+    );
+
+    const otherMatches = allCrops.filter(crop =>
+      crop.toLowerCase().includes(value) &&
+      !MAIN_CROPS.includes(crop)
+    );
+
+    const filtered = [...mainMatches, ...otherMatches].slice(0, 8);
+
+    renderDropdown(filtered);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-box")) {
+      dropdown.style.display = "none";
+    }
+  });
+
+
+  dropdown.addEventListener("click", (e) => {
+    if (e.target.classList.contains("crop-item")) {
+
+      const crop = e.target.innerText;
+
+      input.value = crop;
+      dropdown.style.display = "none";
+
+      loadMarketPrices(crop);
+      loadPriceTrend(crop);
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-box")) {
+      dropdown.style.display = "none";
+    }
+  });
+}
 
   const messageInput = document.getElementById("messageInput")
   const sendBtn = document.getElementById("sendBtn")
@@ -2369,40 +2925,78 @@ function setupEventListeners() {
   if (regionFilter) {
     regionFilter.addEventListener("change", filterMarketData)
   }
+
+  const cityInput = document.getElementById("cityInput");
+
+if (cityInput) {
+  let timer;
+
+cityInput.addEventListener("input", () => {
+  clearTimeout(timer);
+
+  timer = setTimeout(() => {
+    const query = cityInput.value.trim();
+
+    if (query.length < 2) return;
+
+    fetch(`/city_search?q=${query}`)
+      .then(res => res.json())
+      .then(data => {
+      });
+
+  }, 400); 
+});
+}
+
 }
 
 // Page Navigation
 function showPage(pageId) {
 
   pages.forEach((page) => {
-    page.classList.remove("active")
-  })
+    page.classList.remove("active");
+  });
 
-  const targetPage = document.getElementById(pageId)
+  const targetPage = document.getElementById(pageId);
   if (targetPage) {
-    targetPage.classList.add("active")
-    currentPage = pageId
-    localStorage.setItem("currentPage", pageId)
+    targetPage.classList.add("active");
+    currentPage = pageId;
+    localStorage.setItem("currentPage", pageId);
   }
 
   navLinks.forEach((link) => {
-    link.classList.remove("active")
+    link.classList.remove("active");
     if (link.getAttribute("data-page") === pageId) {
-      link.classList.add("active")
+      link.classList.add("active");
     }
-  })
+  });
 
-  navMenu.classList.remove("active")
+  navMenu.classList.remove("active");
 
-  if (pageId === "market") {
-    setTimeout(() => {
-      if (priceChart) {
-        priceChart.resize()
-      }
-    }, 100)
+if (pageId === "market") {
+
+  const commodity = "ALL";
+  const cacheKey = `market_data_${commodity}`;
+  const dateKey = `market_date_${commodity}`;
+
+  const cachedData = localStorage.getItem(cacheKey);
+  const cachedDate = localStorage.getItem(dateKey);
+  const today = new Date().toDateString();
+
+  if (cachedData && cachedDate === today) {
+    renderMarketUI(JSON.parse(cachedData));
+  } else {
+    showMarketSkeleton();
+    loadMarketPrices("ALL");
   }
 
-  console.log(`Navigated to page: ${pageId}`)
+} else if (pageId === "dashboard") {
+  showMarketSkeleton();
+  loadMarketPrices("ALL");
+}
+
+
+  console.log(`Navigated to page: ${pageId}`);
 }
 
 // Theme Management
@@ -2449,6 +3043,19 @@ function toggleMobileNav() {
   navMenu.classList.toggle("active")
 }
 
+// Utility Functions
+function escapeHTML(str) {
+  return str.replace(/[&<>"']/g, function (m) {
+    return ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[m];
+  });
+}
+
 // Message Formatting
 function formatMessage(text) {
 
@@ -2462,11 +3069,80 @@ function formatMessage(text) {
 
 }
 
-// Chatbot Functionality
+// Market Price Rendering
+function renderMarketTable(data) {
+  const table = document.getElementById("priceTable");
 
+  table.innerHTML = `
+    <div class="table-header">
+      <div>Crop</div>
+      <div>Price</div>
+      <div>Market</div>
+      <div>State</div>
+    </div>
+  `;
+
+  data.slice(0, 10).forEach(item => {
+    const icon = getCropIcon(item.commodity);
+
+    table.innerHTML += `
+      <div class="modern-row">
+
+        <div class="crop-cell">
+          <span class="crop-icon">${icon}</span>
+          <span>${item.commodity}</span>
+        </div>
+
+        <div class="price-cell">
+          ₹${item.price}/quintal
+        </div>
+
+        <div class="market-cell">
+          ${cleanMarketName(item.market)}
+        </div>
+
+        <div class="state-cell">
+          ${item.state}
+        </div>
+
+      </div>
+    `;
+  });
+}
+
+function cleanMarketName(name) {
+  return name.replace(/\(.*?\)/g, "").replace("APMC", "").trim();
+}
+
+// Market Price Rendering with Icons
+function getCropIcon(crop) {
+  crop = crop.toLowerCase();
+
+  if (crop.includes("wheat")) return "🌾";
+  if (crop.includes("rice")) return "🍚";
+  if (crop.includes("tomato")) return "🍅";
+  if (crop.includes("onion")) return "🧅";
+  if (crop.includes("corn")) return "🌽";
+  if (crop.includes("potato")) return "🥔";
+  if (crop.includes("sugar")) return "🍬";
+  if (crop.includes("barley")) return "🌾";
+  if (crop.includes("mustard")) return "🌼";
+  if (crop.includes("sesame")) return "🥜";
+  if (crop.includes("groundnut")) return "🥜";
+  if (crop.includes("banana")) return "🍌";
+  if (crop.includes("apple")) return "🍎";
+  if (crop.includes("grape")) return "🍇";
+  if (crop.includes("coconut")) return "🥥";
+  if (crop.includes("tea")) return "🍵";
+  if (crop.includes("mustard")) return "🌼";
+  return "🌱";
+}
+
+// Chatbot Functionality
 function addMessageToChat(message, sender) {
   const chatMessages = document.getElementById("chatMessages");
   if (!chatMessages) return;
+  const safeMessage = escapeHTML(message);
   const messageDiv = document.createElement("div");
   messageDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
   if (sender === "bot") {
@@ -2474,7 +3150,7 @@ function addMessageToChat(message, sender) {
     messageDiv.innerHTML = `
       <div class="message-avatar"><i class="fas fa-robot"></i></div>
       <div class="bot-message-wrapper">
-        <div class="message-content">${formatMessage(message)}</p></div>
+        <div class="message-content">${formatMessage(safeMessage)}</div>
         <button class="speak-btn" id="${btnId}" title="Listen" aria-label="Read aloud">
           <i class="fas fa-volume-up"></i>
         </button>
@@ -2486,7 +3162,7 @@ function addMessageToChat(message, sender) {
   } else {
     messageDiv.innerHTML = `
       <div class="message-avatar"><i class="fas fa-user"></i></div>
-      <div class="message-content">${formatMessage(message)}</p></div>`;
+      <div class="message-content">${formatMessage(safeMessage)}</div>`;
   }
   chatMessages.appendChild(messageDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -2494,6 +3170,36 @@ function addMessageToChat(message, sender) {
 
 let currentAudio = null;
 let currentSpeakBtn = null;
+
+
+async function apiRequest(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+
+    //  Rate limit
+    if (response.status === 429) {
+      throw new Error("RATE_LIMIT");
+    }
+
+    // Server error
+    if (!response.ok) {
+      throw new Error("SERVER_ERROR");
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    if (error.message === "RATE_LIMIT") {
+      throw new Error("⚠️ Too many requests. Slow down and try again in a minute.");
+    }
+
+    if (error.message === "SERVER_ERROR") {
+      throw new Error("⚠️ Server error. Please try again.");
+    }
+
+    throw new Error("⚠️ Unable to connect. Check your internet.");
+  }
+}
 
 async function speakText(text, btn) {
 
@@ -2537,17 +3243,28 @@ cleanText = cleanText.replace(/(\d+)\./g, "$1");
   try {
 
     const response = await fetch(`${BACKEND_URL}/speak`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        text: cleanText,
-        lang: lang
-      })
-    });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    text: cleanText,
+    lang: lang
+  })
+});
 
-    const blob = await response.blob();
+// Handle rate limit
+if (response.status === 429) {
+  throw new Error("⚠️ Too many audio requests. Try again later.");
+}
+
+// Handle server errors
+if (!response.ok) {
+  throw new Error("⚠️ Speech generation failed.");
+}
+
+// Only now safe to read blob
+const blob = await response.blob();
     const audio = new Audio(URL.createObjectURL(blob));
 
     currentAudio = audio;
@@ -2570,7 +3287,7 @@ cleanText = cleanText.replace(/(\d+)\./g, "$1");
     currentAudio = null;
     currentSpeakBtn = null;
 
-    console.error("Speech error:", error);
+    showToast(error.message || "Speech failed", "error");
   }
 }
 
@@ -2596,62 +3313,63 @@ if (currentSpeakBtn) {
   if (!messageInput) return;
 
   const message = messageInput.value.trim();
+  if (message.length > 500) {
+  showToast("Message too long", "error");
+  return;
+}
   if (!message) return;
 
   messageInput.value = "";
   addMessageToChat(message, "user");
 
+  
   try {
-    const response = await fetch(`${BACKEND_URL}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-    message: message,
-    session_id: sessionId
+  const data = await apiRequest(`${BACKEND_URL}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: message,
+      session_id: sessionId
     }),
-    });
+  });
 
-    const data = await response.json();
-    addMessageToChat(data.reply, "bot");
+  addMessageToChat(data.reply, "bot");
 
-  } catch (error) {
-    addMessageToChat("⚠️ Error connecting to KrishiMitra server.", "bot");
-    console.error(error);
-  }
+} catch (err) {
+  addMessageToChat(err.message, "bot");
+}
 }
 
 async function sendQuickMessage(message) {
-  
-  // Stop any speaking audio
-if (currentAudio) {
-  currentAudio.pause();
-  currentAudio.currentTime = 0;
-  currentAudio = null;
-}
 
-if (currentSpeakBtn) {
-  currentSpeakBtn.classList.remove("speaking");
-  currentSpeakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-  currentSpeakBtn = null;
-}
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+
+  if (currentSpeakBtn) {
+    currentSpeakBtn.classList.remove("speaking");
+    currentSpeakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    currentSpeakBtn = null;
+  }
 
   addMessageToChat(message, "user");
 
   try {
-    const response = await fetch(`${BACKEND_URL}/chat`, {
+    const data = await apiRequest(`${BACKEND_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-  message: message,
-  session_id: sessionId
-}),
+        message,
+        session_id: sessionId
+      }),
     });
 
-    const data = await response.json();
     addMessageToChat(data.reply, "bot");
-  } catch (error) {
-    addMessageToChat("⚠️ Error connecting to KrishiMitra server.", "bot");
-    console.error(error);
+
+  } catch (err) {
+    addMessageToChat(err.message, "bot");
   }
 }
     let mediaRecorder;
@@ -2684,12 +3402,10 @@ async function toggleVoiceRecording() {
       showToast("🎙️ Transcribing speech with Groq Whisper...", "info");
 
        try {
-    const response = await fetch(`${BACKEND_URL}/transcribe`, {
-      method: "POST",
-      body: formData,
-    });
-
-        const data = await response.json();
+    const data = await apiRequest(`${BACKEND_URL}/transcribe`, {
+  method: "POST",
+  body: formData,
+});
         if (data.text) {
           document.getElementById("messageInput").value = data.text;
           showToast("✅ Transcription complete!", "success");
@@ -2805,16 +3521,441 @@ function removeImage() {
   imageInput.value = "";
 }
 
+function openWeatherPage() {
+  showPage("weather")
+}
+
+// Weather Initialization
+async function loadInitialWeather() {
+
+  const cache = localStorage.getItem("weather_data");
+  const time = localStorage.getItem("weather_time");
+
+  const now = Date.now();
+
+  // 30 MIN CACHE
+  if (cache && time && (now - time < 1800000)) {
+    console.log("Using cached weather");
+
+    const data = JSON.parse(cache);
+    updateWeatherUI(data);
+    document.getElementById("cityInput").value = data.city;
+    return;
+  }
+
+  const savedCity = localStorage.getItem("weatherCity");
+
+  if (savedCity) {
+    fetchWeather(savedCity);
+    return;
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      () => getWeatherByLocation(),
+      () => fetchWeather("Delhi")
+    );
+  } else {
+    fetchWeather("Delhi");
+  }
+}
+
+async function fetchWeather(city) {
+  try {
+
+    const data = await apiRequest(`${BACKEND_URL}/weather?city=${city}`);
+
+    // SAVE CACHE
+    localStorage.setItem("weather_data", JSON.stringify({...data, city}));
+    localStorage.setItem("weather_time", Date.now());
+
+    updateWeatherUI({...data, city});
+
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// Weather Fetching
+async function getWeatherByCity() {
+
+  const city = document.getElementById("cityInput").value.trim();
+
+  if (!/^[a-zA-Z\s]+$/.test(city)) {
+    showToast("Invalid city name", "error");
+    return;
+  }
+
+  if (!city) {
+    showToast("Please enter a city name", "error");
+    return;
+  }
+
+  try {
+    const data = await apiRequest(`${BACKEND_URL}/weather?city=${city}`);
+
+    const finalData = { ...data, city: data.city || data.name || city };
+
+localStorage.setItem("weather_data", JSON.stringify(finalData));
+localStorage.setItem("weather_time", Date.now());
+
+updateWeatherUI(finalData);
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+async function getWeatherByLocation() {
+
+  if (!navigator.geolocation) {
+    showToast("Geolocation not supported", "error");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      localStorage.setItem("weatherLat", lat);
+      localStorage.setItem("weatherLon", lon);
+
+      try {
+
+        const data = await apiRequest(`${BACKEND_URL}/weather_by_coords?lat=${lat}&lon=${lon}`);
+
+        // stop immediately if backend error
+        if (data.error) {
+          showToast(data.error, "error");
+          return;
+        }
+
+        // save location
+        await apiRequest(`${BACKEND_URL}/save_location`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: sessionId,
+            city: data.city,
+            lat: lat,
+            lon: lon
+          })
+        });
+
+        // ✅ single source of truth
+        updateWeatherUI(data);
+
+      } catch (err) {
+        console.error(err);
+        showToast("Location weather failed", "error");
+      }
+
+    },
+    () => {
+      showToast("Location blocked. Please allow permission.", "error");
+    }
+  );
+}
+
+function updateWeatherUI(data) {
+
+  const icon = getWeatherIcon(data.condition);
+  const city = data.city || data.name;
+
+  // WEATHER PAGE
+  document.getElementById("weatherCity").innerText = city;
+  document.getElementById("weatherTemp").innerText = data.temperature.toFixed(1) + "°C";
+  document.getElementById("feelsLike").innerText = data.feels_like.toFixed(1) + "°C";
+  document.getElementById("weatherHumidity").innerText = "Humidity: " + data.humidity + "%";
+  document.getElementById("weatherWind").innerText = "Wind: " + data.wind + " km/h";
+  document.getElementById("weatherRain").innerText = "Rain: " + data.rain_probability + "%";
+
+  document.getElementById("weatherCondition").innerHTML =
+    `<i class="fas ${icon.icon}" style="color:${icon.color};margin-right:6px"></i> ${data.condition}`;
+
+  if (data.sunrise && data.sunset) {
+    const sunrise = new Date(data.sunrise * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    const sunset = new Date(data.sunset * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+    document.getElementById("sunriseTime").innerText = "Sunrise: " + sunrise;
+    document.getElementById("sunsetTime").innerText = "Sunset: " + sunset;
+  }
+
+  // DASHBOARD
+  document.getElementById("dashCity").innerText = data.city;
+  document.getElementById("dashTemp").innerText = data.temperature.toFixed(1) + "°C";
+  document.getElementById("dashCondition").innerHTML =
+    `<i class="fas ${icon.icon}" style="color:${icon.color};margin-right:6px"></i> ${data.condition}`;
+
+  document.getElementById("dashHumidity").innerText = "Humidity: " + data.humidity + "%";
+  document.getElementById("dashWind").innerText = "Wind: " + data.wind + " km/h";
+  document.getElementById("dashRain").innerText = "Rain: " + data.rain_probability + "%";
+
+  generateWeatherAlerts(data.temperature, data.humidity, data.wind, data.condition);
+  generateWeatherInsights(data.temperature, data.humidity, data.wind, data.rain_probability);
+
+  if (data.city) {
+    document.getElementById("cityInput").value = data.city;
+    localStorage.setItem("weatherCity", data.city);
+  }
+
+  loadForecast(data.city);
+}
+// Forecast Fetching
+async function loadForecast(city){
+
+  const data = await apiRequest(`${BACKEND_URL}/forecast?city=${city}`)
+
+  const container = document.getElementById("forecastContainer")
+  container.innerHTML = ""
+
+  data.slice(0,3).forEach(day => {
+   const dayName = new Date(day.date).toLocaleDateString("en-IN",{ weekday:"short" })
+   const weatherIcon = getWeatherIcon(day.condition)
+    const card = document.createElement("div")
+
+    card.style = `
+      background:var(--muted);
+      padding:15px;
+      border-radius:10px;
+      flex:1;
+      min-width:120px;
+      text-align:center
+    `
+const rainColor = document.body.classList.contains("dark") ? "#60a5fa" : "#2563eb"
+
+card.innerHTML = `
+  <h4>${dayName}</h4>
+
+  <i class="fas ${weatherIcon.icon}"
+     style="font-size:42px;color:${weatherIcon.color};margin:10px 0">
+  </i>
+
+  <div style="font-size:20px;font-weight:600">${day.temp_max}° / ${day.temp_min}°</div>
+  <div>${day.condition}</div>
+
+  <div style="font-size:14px;font-weight:600;color:${rainColor};margin-top:6px">
+  🌧 Rain Chance: ${day.rain_probability}%
+  </div>
+`
+
+    container.appendChild(card)
+
+  })
+}
+
+// City Search
+async function searchCities(query){
+
+  if(query.length < 2){
+    document.getElementById("citySuggestions").style.display = "none"
+    return
+  }
+
+  const cities = await apiRequest(`${BACKEND_URL}/city_search?q=${query}`)
+
+  const box = document.getElementById("citySuggestions")
+  box.innerHTML = ""
+
+  cities.forEach(city => {
+
+    const div = document.createElement("div")
+
+    div.style.padding = "10px"
+    div.style.cursor = "pointer"
+    div.style.borderBottom = "1px solid var(--border)"
+
+    div.innerText = `${city.name}, ${city.state || ""} ${city.country}`
+
+    div.onclick = () => {
+      document.getElementById("cityInput").value = city.name
+      box.style.display = "none"
+    }
+
+    box.appendChild(div)
+
+  })
+
+  box.style.display = cities.length ? "block" : "none"
+
+}
+
+// Weather Alerts Generation
+function generateWeatherAlerts(temp, humidity, wind, condition){
+
+  const container = document.getElementById("alertsContainer")
+  if(!container) return
+
+  container.innerHTML = ""
+
+  let alerts = []
+
+  condition = condition.toLowerCase()
+
+  // Heat stress
+  if(temp >= 35){
+    alerts.push({
+      title:"High Temperature",
+      message:"Heat stress risk. Increase irrigation and avoid midday spraying.",
+      icon:"fas fa-thermometer-full"
+    })
+  }
+
+  // Cold stress
+  if(temp <= 10){
+    alerts.push({
+      title:"Low Temperature",
+      message:"Cold conditions may damage crops. Protect sensitive plants.",
+      icon:"fas fa-snowflake"
+    })
+  }
+
+  // High humidity → fungal diseases
+  if(humidity >= 80){
+    alerts.push({
+      title:"Fungal Disease Risk",
+      message:"High humidity may cause fungal infections. Monitor crops closely.",
+      icon:"fas fa-bacteria"
+    })
+  }
+
+  // Strong wind
+  if(wind >= 15){
+    alerts.push({
+      title:"Strong Wind",
+      message:"Strong winds may damage crops and reduce spray effectiveness.",
+      icon:"fas fa-wind"
+    })
+  }
+
+  // Rain warning
+  if(condition.includes("rain")){
+    alerts.push({
+      title:"Rain Expected",
+      message:"Rain likely. Avoid pesticide spraying today.",
+      icon:"fas fa-cloud-rain"
+    })
+  }
+
+  // Dry air → irrigation
+  if(humidity < 30 && temp > 30){
+    alerts.push({
+      title:"Dry Soil Risk",
+      message:"Low humidity and high heat may dry soil quickly. Consider irrigation.",
+      icon:"fas fa-tint"
+    })
+  }
+
+  // Perfect weather
+  if(alerts.length === 0){
+    container.innerHTML = `
+      <div class="alert-item">
+        <i class="fas fa-check-circle alert-icon"></i>
+        <div class="alert-content">
+          <h4>Good Farming Conditions</h4>
+          <p>Weather conditions are favorable for farming activities.</p>
+        </div>
+      </div>
+    `
+    return
+  }
+
+  alerts.forEach(alert=>{
+    container.innerHTML += `
+      <div class="alert-item">
+        <i class="${alert.icon} alert-icon"></i>
+        <div class="alert-content">
+          <h4>${alert.title}</h4>
+          <p>${alert.message}</p>
+        </div>
+      </div>
+    `
+  })
+}
+
+// Weather Insights Generation
+function generateWeatherInsights(temp, humidity, wind, rain){
+
+  const container = document.getElementById("weatherInsights")
+  if(!container) return
+
+  container.innerHTML = ""
+
+  let insights = []
+
+  // Spray Safety
+  if(wind > 10 || rain > 40){
+    insights.push({
+      title:"Spray Safety",
+      icon:"fas fa-spray-can",
+      message:"Not safe for pesticide spraying today."
+    })
+  }else{
+    insights.push({
+      title:"Spray Safety",
+      icon:"fas fa-spray-can",
+      message:"Conditions are safe for spraying."
+    })
+  }
+
+  // Irrigation
+  if(temp > 35 && humidity < 30){
+    insights.push({
+      title:"Irrigation Advice",
+      icon:"fas fa-tint",
+      message:"High heat may dry soil quickly. Consider irrigation."
+    })
+  }else{
+    insights.push({
+      title:"Irrigation Advice",
+      icon:"fas fa-seedling",
+      message:"No urgent irrigation needed."
+    })
+  }
+
+  // Heat Stress
+  if(temp > 35){
+    insights.push({
+      title:"Heat Stress",
+      icon:"fas fa-thermometer-full",
+      message:"High temperature may stress crops."
+    })
+  }else{
+    insights.push({
+      title:"Heat Stress",
+      icon:"fas fa-check-circle",
+      message:"Temperature is safe for most crops."
+    })
+  }
+
+  // Field Work Window
+  insights.push({
+    title:"Field Work Window",
+    icon:"fas fa-clock",
+    message:"Best time: Morning or evening. Avoid afternoon heat."
+  })
+
+  insights.forEach(i=>{
+    container.innerHTML += `
+      <div style="
+        background:var(--muted);
+        padding:15px;
+        border-radius:10px;
+      ">
+        <h4><i class="${i.icon}" style="color:var(--primary);margin-right:6px"></i>${i.title}</h4>
+        <p style="font-size:14px;margin-top:6px">${i.message}</p>
+      </div>
+    `
+  })
+
+}
+
 // Load chat history on page load
 async function loadChatHistory() {
 
   try {
-    const response = await fetch(
-      `${BACKEND_URL}/chat_history?session_id=${sessionId}`
-    );
-
-    const history = await response.json();
-
+    const history = await apiRequest(`${BACKEND_URL}/chat_history?session_id=${sessionId}`);
     history.forEach(msg => {
       addMessageToChat(msg.message, msg.role === "user" ? "user" : "bot");
     });
@@ -2824,6 +3965,206 @@ async function loadChatHistory() {
   }
 }
 
+// Get weather icon class based on condition
+function getWeatherIcon(condition){
+
+  condition = condition.toLowerCase()
+
+  if(condition.includes("clear"))
+    return {icon:"fa-sun", color:"#facc15"}
+
+  if(condition.includes("cloud"))
+    return {icon:"fa-cloud", color:"#cbd5e1"}
+
+  if(condition.includes("rain"))
+    return {icon:"fa-cloud-rain", color:"#60a5fa"}
+
+  if(condition.includes("storm"))
+    return {icon:"fa-bolt", color:"#facc15"}
+
+  if(condition.includes("snow"))
+    return {icon:"fa-snowflake", color:"#e2e8f0"}
+
+  return {icon:"fa-cloud", color:"#cbd5e1"}
+}
+
+function getTopCrops(data) {
+  const ALLOWED = ["wheat", "rice", "maize", "onion", "garlic"]
+
+  const map = {}
+
+  data.forEach(item => {
+    if (!item.commodity || !item.price) return
+
+    let crop = item.commodity.toLowerCase()
+
+    // normalize variations
+    if (crop.includes("onion")) crop = "onion"
+    else if (crop.includes("wheat")) crop = "wheat"
+    else if (crop.includes("rice") || crop.includes("paddy")) crop = "rice"
+    else if (crop.includes("maize")) crop = "maize"
+    else if (crop.includes("garlic")) crop = "garlic"
+
+    if (!ALLOWED.includes(crop)) return
+
+    if (!map[crop] || item.price > map[crop].price) {
+      map[crop] = item
+    }
+  })
+
+  return Object.values(map)
+}
+
+function showMarketSkeleton() {
+
+  // DASHBOARD skeleton
+  const dashboardContainer = document.getElementById("marketPricesContainer");
+  if (dashboardContainer) {
+    dashboardContainer.innerHTML = `
+      <div class="modern-price-item skeleton"></div>
+      <div class="modern-price-item skeleton"></div>
+      <div class="modern-price-item skeleton"></div>
+      <div class="modern-price-item skeleton"></div>
+      <div class="modern-price-item skeleton"></div>
+    `;
+  }
+
+  // MARKET PAGE skeleton
+  const table = document.getElementById("priceTable");
+  if (table) {
+    table.innerHTML = `
+      <div class="table-header">
+        <div class="table-cell">Crop</div>
+        <div class="table-cell">Price</div>
+        <div class="table-cell">Market</div>
+        <div class="table-cell">State</div>
+      </div>
+
+      <div class="table-row skeleton"></div>
+      <div class="table-row skeleton"></div>
+      <div class="table-row skeleton"></div>
+      <div class="table-row skeleton"></div>
+      <div class="table-row skeleton"></div>
+    `;
+  }
+}
+
+// Load all crops for dropdown
+async function loadAllCrops() {
+  try {
+    const res = await fetch("/market_prices");
+    const data = await res.json();
+
+    const marketData = Array.isArray(data) ? data : data.data;
+
+    allCrops = [...new Set(marketData.map(i => i.commodity))];
+
+  } catch (e) {
+    console.log("Failed to load crops");
+  }
+}
+
+// Load market prices
+async function loadMarketPrices(commodity = "ALL") {
+
+  const today = new Date().toDateString();
+
+const cacheKey = `market_data_${commodity}`;
+const dateKey = `market_date_${commodity}`;
+
+const cachedData = localStorage.getItem(cacheKey);
+const cachedDate = localStorage.getItem(dateKey);
+
+  if (cachedData && cachedDate === today) {
+    console.log("Using cached market data");
+
+    const parsed = JSON.parse(cachedData);
+
+    renderMarketUI(parsed);
+    return;
+  }
+
+  showMarketSkeleton();
+
+  if (marketController) {
+    marketController.abort();
+  }
+
+  marketController = new AbortController();
+
+  try {
+
+    const url = commodity === "ALL"
+      ? `${BACKEND_URL}/market_prices`
+      : `${BACKEND_URL}/market_prices?commodity=${commodity}`;
+
+    const res = await fetch(url, { signal: marketController.signal });
+    const data = await res.json();
+
+    const marketData = Array.isArray(data) ? data : data.data;
+
+    if (!marketData || marketData.length === 0) {
+      showToast("No market data found", "error");
+      return;
+    }
+
+    localStorage.setItem(cacheKey, JSON.stringify(marketData));
+    localStorage.setItem(dateKey, today);
+
+    renderMarketUI(marketData);
+
+  } catch (err) {
+
+    if (err.name === "AbortError") return;
+
+    console.error(err);
+    showToast("API error", "error");
+  }
+}
+
+function renderMarketUI(data) {
+
+  const container = document.getElementById("marketPricesContainer");
+
+  if (container) {
+    container.innerHTML = "";
+  
+    const filtered = getTopCrops(data);
+
+    // fallback if nothing found
+    if (filtered.length === 0) {
+      filtered.push(...data.slice(0, 5));
+    }
+
+    filtered.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "modern-price-item";
+
+      div.innerHTML = `
+        <div class="price-left">
+          <span class="crop-icon">${getCropIcon(item.commodity)}</span>
+          <span class="crop-name">${item.commodity}</span>
+        </div>
+
+        <div class="price-center">
+          ₹${item.price}/quintal
+        </div>
+
+        <div class="price-right">
+          <span class="market-badge">
+            ${cleanMarketName(item.market)}
+          </span>
+        </div>
+      `;
+
+      container.appendChild(div);
+    });
+  }
+
+  renderMarketTable(data);
+}
+
+
 // Analyze Image for Pest Detection
 async function analyzeImage() {
   const imageInput = document.getElementById("imageInput");
@@ -2832,12 +4173,21 @@ async function analyzeImage() {
   const progressText = document.getElementById("progressText");
   const imagePreview = document.getElementById("imagePreview");
 
-  if (!imageInput.files.length) {
-    showToast("⚠️ Please select or upload an image first!", "error");
-    return;
-  }
+const file = imageInput.files[0];
+if (!file) {
+  showToast("No image selected", "error");
+  return;
+}
 
-  const file = imageInput.files[0];
+if (!file.type.startsWith("image/")) {
+  showToast("Invalid file type", "error");
+  return;
+}
+
+if (file.size > 2 * 1024 * 1024) {
+  showToast("Image too large (max 2MB)", "error");
+  return;
+}
   const formData = new FormData();
 formData.append("file", file);
 formData.append("session_id", sessionId);
@@ -2861,31 +4211,18 @@ formData.append("lang", lang);
   showToast("🧠 Analyzing image with Gemini Vision...", "info");
 
   // Send image to backend
-  const response = await fetch(`${BACKEND_URL}/detect_pest`, {
-    method: "POST",
-    body: formData,
-  });
-
-  // Read raw response (can be HTML if backend failed)
-  const rawText = await response.text();
   let data;
 
-  // Try parsing JSON safely
-  try {
-    data = JSON.parse(rawText);
-  } catch (err) {
-    console.error("Invalid JSON from backend:", rawText);
-    throw new Error(
-      rawText.includes("Error") || rawText.includes("NOT_FOUND")
-        ? "Server error or invalid route"
-        : "Invalid JSON response"
-    );
-  }
+try {
+  data = await apiRequest(`${BACKEND_URL}/detect_pest`, {
+    method: "POST",
+    body: formData
+  });
 
-  // Handle backend-side errors
-  if (!response.ok || data.error) {
-    throw new Error(data.error || "Pest detection failed");
-  }
+} catch (err) {
+  showToast(err.message, "error");
+  return; // IMPORTANT: stop execution if failed
+}
 
   // Success handling
   progressFill.style.width = "100%";
@@ -2958,74 +4295,201 @@ function showTreatment(type) {
 }
 
 // Market Price Chart
-function initializePriceChart() {
-  const ctx = document.getElementById("priceChart")
-  if (!ctx) return
+function setTrendCrop(crop, btn) {
+  document.querySelectorAll(".trend-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  loadPriceTrend(crop);
+}
 
-  const chartData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Wheat",
-        data: [2000, 2100, 2050, 2150, 2200, 2150],
-        borderColor: "rgb(5, 150, 105)",
-        backgroundColor: "rgba(5, 150, 105, 0.1)",
-        tension: 0.4,
-      },
-      {
-        label: "Rice",
-        data: [1800, 1850, 1900, 1880, 1920, 1890],
-        borderColor: "rgb(16, 185, 129)",
-        backgroundColor: "rgba(16, 185, 129, 0.1)",
-        tension: 0.4,
-      },
-      {
-        label: "Tomato",
-        data: [35, 40, 38, 42, 45, 45],
-        borderColor: "rgb(71, 85, 105)",
-        backgroundColor: "rgba(71, 85, 105, 0.1)",
-        tension: 0.4,
-      },
-    ],
+if (priceChart) {
+  priceChart.destroy();
+  priceChart = null;
+}
+async function loadPriceTrend(crop) {
+  if (!crop || crop === "ALL") return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/price_trend?commodity=${crop}`);
+    const data = await res.json();
+
+    const chartContainer = document.getElementById("priceChart").parentElement;
+    const statsContainer = document.getElementById("chartStats");
+
+    if (!data.length) {
+      if (priceChart) priceChart.destroy();
+      if (!data.length) {
+
+  if (priceChart) {
+    priceChart.destroy();
+    priceChart = null;
   }
 
-  const config = {
-    type: "line",
-    data: chartData,
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        title: {
-          display: false,
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: false,
-          grid: {
-            color: isDarkMode ? "#334155" : "#e2e8f0",
-          },
-          ticks: {
-            color: isDarkMode ? "#f1f5f9" : "#475569",
-          },
-        },
-        x: {
-          grid: {
-            color: isDarkMode ? "#334155" : "#e2e8f0",
-          },
-          ticks: {
-            color: isDarkMode ? "#f1f5f9" : "#475569",
-          },
-        },
-      },
-    },
-  }
+  const canvas = document.getElementById("priceChart");
+  const ctx = canvas.getContext("2d");
 
-  priceChart = new Chart(ctx, config)
+  // clear graph
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // show message
+  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "#94a3b8";
+  ctx.textAlign = "center";
+  ctx.fillText(`No trend data for ${crop}`, canvas.width / 2, 140);
+
+  document.getElementById("currentCrop").innerText = crop;
+
+  if (statsContainer) statsContainer.innerHTML = "";
+
+  return;
+}
+      if (statsContainer) statsContainer.innerHTML = "";
+      return;
+    }
+
+    if (priceChart) priceChart.destroy();
+
+    if (!document.getElementById("priceChart")) {
+      const canvas = document.createElement("canvas");
+      canvas.id = "priceChart";
+      chartContainer.appendChild(canvas);
+    }
+
+    const labels = data.map(item => {
+  const d = new Date(item.date)
+
+  const day = String(d.getDate()).padStart(2, '0')
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const year = d.getFullYear()
+
+  return `${day}/${month}/${year}`
+})
+
+    const prices = data.map(d => d.price);
+    const isDark = document.body.classList.contains("dark");
+
+    const primaryColor = isDark ? "#10b981" : "#059669";
+    const gridColor = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+    const tickColor = isDark ? "#94a3b8" : "#64748b";
+    const tooltipBg = isDark ? "#1e293b" : "#ffffff";
+    const tooltipBorder = isDark ? "#334155" : "#e2e8f0";
+
+    const ctx = document.getElementById("priceChart").getContext("2d");
+    document.getElementById("currentCrop").innerText = crop;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, isDark ? "rgba(16,185,129,0.3)" : "rgba(5,150,105,0.2)");
+    gradient.addColorStop(0.7, isDark ? "rgba(16,185,129,0.05)" : "rgba(5,150,105,0.02)");
+    gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+    priceChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: `${crop} (₹/quintal)`,
+          data: prices,
+          borderColor: primaryColor,
+          backgroundColor: gradient,
+          borderWidth: 2.5,
+          pointRadius: data.length === 1 ? 6 : 3,
+          pointHoverRadius: 8,
+          pointBackgroundColor: primaryColor,
+          pointBorderColor: isDark ? "#1e293b" : "#ffffff",
+          pointBorderWidth: 2,
+          tension: 0.45,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: tooltipBg,
+            borderColor: tooltipBorder,
+            borderWidth: 1,
+            titleColor: isDark ? "#f1f5f9" : "#0f172a",
+            bodyColor: primaryColor,
+            padding: 14,
+            cornerRadius: 12,
+            titleFont: { size: 12, weight: "600" },
+            bodyFont: { size: 14, weight: "700" },
+            displayColors: false,
+            callbacks: {
+              title: ctx => "📅 " + ctx[0].label,
+              label: ctx => "₹" + ctx.parsed.y.toLocaleString("en-IN") + "/quintal",
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: gridColor, drawBorder: false },
+            ticks: { color: tickColor, font: { size: 11 }, maxTicksLimit: 6, maxRotation: 0 },
+            border: { display: false }
+          },
+          y: {
+            grid: { color: gridColor, drawBorder: false },
+            ticks: {
+              color: tickColor,
+              font: { size: 11 },
+              callback: v => "₹" + v.toLocaleString("en-IN"),
+            },
+            border: { display: false }
+          }
+        },
+        animation: {
+          duration: 800,
+          easing: "easeInOutQuart"
+        }
+      }
+    });
+
+    // Stats chips
+    if (statsContainer && prices.length > 1) {
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      const latest = prices[prices.length - 1];
+      const change = latest - prices[0];
+      const changeColor = change >= 0 ? "#16a34a" : "#dc2626";
+      const changeSign = change >= 0 ? "▲" : "▼";
+
+      statsContainer.innerHTML = `
+        <div class="stat-chip">
+          <div class="stat-label">Latest Price</div>
+          <div class="stat-value">₹${latest.toLocaleString("en-IN")}</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-label">Highest</div>
+          <div class="stat-value" style="color:#16a34a">₹${max.toLocaleString("en-IN")}</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-label">Lowest</div>
+          <div class="stat-value" style="color:#dc2626">₹${min.toLocaleString("en-IN")}</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-label">Change</div>
+          <div class="stat-value" style="color:${changeColor}">${changeSign} ₹${Math.abs(change).toLocaleString("en-IN")}</div>
+        </div>
+      `;
+    } else if (statsContainer) {
+      const latest = prices[0];
+      statsContainer.innerHTML = `
+        <div class="stat-chip">
+          <div class="stat-label">Latest Price</div>
+          <div class="stat-value">₹${latest.toLocaleString("en-IN")}</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-label">Data Points</div>
+          <div class="stat-value" style="color:var(--muted-foreground)">Only today available</div>
+        </div>
+      `;
+    }
+
+  } catch (err) {
+    console.error("Trend error:", err);
+  }
 }
 
 function filterMarketData() {
@@ -3104,6 +4568,13 @@ const observer = new IntersectionObserver((entries) => {
 document.addEventListener("DOMContentLoaded", () => {
   const animatedElements = document.querySelectorAll(".feature-card, .dashboard-card")
   animatedElements.forEach((el) => observer.observe(el))
+})
+
+// Keyboard accessibility for weather input
+document.getElementById("cityInput")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    getWeatherByCity()
+  }
 })
 
 // Error handling
