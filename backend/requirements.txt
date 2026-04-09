@@ -1,5 +1,6 @@
 flask
 flask-cors
+flask-limiter
 groq
 python-dotenv
 google-generativeai
@@ -7,3 +8,5 @@ google-cloud-texttospeech
 psycopg2-binary
 Pillow
 requests
+redis
+gunicorn

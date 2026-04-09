@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="/static/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -2074,7 +2075,21 @@ select:focus {
 <h3><i class="fas fa-cloud-sun"></i> Weather Today</h3>
 </div>
 
-<div class="dash-weather-content">
+
+<div id="dashWeatherSkeleton" style="display:none">
+
+  <div class="skeleton" style="height:20px;width:100px;margin-bottom:10px;"></div>
+  <div class="skeleton" style="height:40px;width:80px;margin-bottom:15px;"></div>
+
+  <div style="display:flex;gap:10px">
+    <div class="skeleton" style="width:80px;height:60px;"></div>
+    <div class="skeleton" style="width:80px;height:60px;"></div>
+    <div class="skeleton" style="width:80px;height:60px;"></div>
+  </div>
+
+</div>
+
+<div id="dashWeatherContent" class="dash-weather-content">
 
 <div class="weather-main">
 <div class="weather-city" id="dashCity">--</div>
@@ -2103,7 +2118,6 @@ select:focus {
 
 </div>
 </div>
-
                     <div class="dashboard-card recommendations-card">
                         <div class="card-header">
                             <h3><i class="fas fa-lightbulb"></i> Today's Recommendations</h3>
@@ -2236,7 +2250,23 @@ Use My Location
     <h3><i class="fas fa-cloud-sun"></i> Current Weather</h3>
   </div>
 
-  <div class="weather-content">
+  <!-- SKELETON UI -->
+<div id="weatherSkeleton" style="display:none">
+
+  <div class="skeleton" style="height:20px;width:120px;margin-bottom:10px;"></div>
+  <div class="skeleton" style="height:40px;width:80px;margin-bottom:20px;"></div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="skeleton" style="width:100px;height:70px;"></div>
+    <div class="skeleton" style="width:100px;height:70px;"></div>
+    <div class="skeleton" style="width:100px;height:70px;"></div>
+    <div class="skeleton" style="width:100px;height:70px;"></div>
+  </div>
+
+</div>
+
+<!-- REAL WEATHER UI -->
+<div id="weatherContent" class="weather-content">
 
     <div class="weather-main">
       <div class="weather-city" id="weatherCity">Select City</div>
@@ -2930,6 +2960,7 @@ if (input && dropdown) {
 
 if (cityInput) {
   let timer;
+let controller;
 
 cityInput.addEventListener("input", () => {
   clearTimeout(timer);
@@ -2939,12 +2970,8 @@ cityInput.addEventListener("input", () => {
 
     if (query.length < 2) return;
 
-    fetch(`/city_search?q=${query}`)
-      .then(res => res.json())
-      .then(data => {
-      });
-
-  }, 400); 
+    searchCities(query);
+  }, 700); // increased delay
 });
 }
 
@@ -3527,7 +3554,7 @@ function openWeatherPage() {
 
 // Weather Initialization
 async function loadInitialWeather() {
-
+  showDashboardWeatherLoading();
   const cache = localStorage.getItem("weather_data");
   const time = localStorage.getItem("weather_time");
 
@@ -3539,6 +3566,7 @@ async function loadInitialWeather() {
 
     const data = JSON.parse(cache);
     updateWeatherUI(data);
+    hideDashboardWeatherLoading();
     document.getElementById("cityInput").value = data.city;
     return;
   }
@@ -3561,11 +3589,14 @@ async function loadInitialWeather() {
 }
 
 async function fetchWeather(city) {
+
+  showWeatherLoading();
+  showDashboardWeatherLoading();
+
   try {
 
     const data = await apiRequest(`${BACKEND_URL}/weather?city=${city}`);
 
-    // SAVE CACHE
     localStorage.setItem("weather_data", JSON.stringify({...data, city}));
     localStorage.setItem("weather_time", Date.now());
 
@@ -3573,40 +3604,61 @@ async function fetchWeather(city) {
 
   } catch (err) {
     showToast(err.message, "error");
+  } finally {
+    hideWeatherLoading();
+    hideDashboardWeatherLoading();
   }
 }
+
 
 // Weather Fetching
 async function getWeatherByCity() {
 
+  showWeatherLoading();
+  showDashboardWeatherLoading();
   const city = document.getElementById("cityInput").value.trim();
 
-  if (!/^[a-zA-Z\s]+$/.test(city)) {
-    showToast("Invalid city name", "error");
-    return;
-  }
+if (!city) {
+  showToast("Please enter a city name", "error");
+  hideWeatherLoading();
+  return;
+}
 
-  if (!city) {
-    showToast("Please enter a city name", "error");
-    return;
-  }
+// strict validation
+if (!/^[a-zA-Z\s]{2,}$/.test(city)) {
+  showToast("❌ Invalid city name", "error");
+  return;
+}
 
   try {
     const data = await apiRequest(`${BACKEND_URL}/weather?city=${city}`);
 
-    const finalData = { ...data, city: data.city || data.name || city };
+if (!data || data.error || data.temperature === undefined) {
+  showToast("❌ City not found", "error");
+  return;
+}
+
+const finalData = {
+  ...data,
+  city: data.city || data.name || city
+};
 
 localStorage.setItem("weather_data", JSON.stringify(finalData));
 localStorage.setItem("weather_time", Date.now());
 
 updateWeatherUI(finalData);
+hideWeatherLoading();
+hideDashboardWeatherLoading();
   } catch (err) {
     showToast(err.message, "error");
+    hideWeatherLoading();
+    hideDashboardWeatherLoading();
   }
 }
 
 async function getWeatherByLocation() {
-
+  showWeatherLoading();
+  showDashboardWeatherLoading();
   if (!navigator.geolocation) {
     showToast("Geolocation not supported", "error");
     return;
@@ -3614,7 +3666,6 @@ async function getWeatherByLocation() {
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
-
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
@@ -3643,30 +3694,40 @@ async function getWeatherByLocation() {
           })
         });
 
-        // ✅ single source of truth
         updateWeatherUI(data);
+        hideWeatherLoading();
+        hideDashboardWeatherLoading();
 
       } catch (err) {
         console.error(err);
         showToast("Location weather failed", "error");
+        hideDashboardWeatherLoading();
+        hideWeatherLoading();
       }
 
     },
     () => {
       showToast("Location blocked. Please allow permission.", "error");
+      hideWeatherLoading();
+      hideDashboardWeatherLoading();
     }
   );
 }
 
 function updateWeatherUI(data) {
-
+if (!data || data.temperature === undefined || !data.condition) {
+  showToast("❌ Invalid weather data", "error");
+  return;
+}
   const icon = getWeatherIcon(data.condition);
   const city = data.city || data.name;
 
   // WEATHER PAGE
   document.getElementById("weatherCity").innerText = city;
-  document.getElementById("weatherTemp").innerText = data.temperature.toFixed(1) + "°C";
-  document.getElementById("feelsLike").innerText = data.feels_like.toFixed(1) + "°C";
+  document.getElementById("weatherTemp").innerText =
+  (Number(data.temperature) || 0).toFixed(1) + "°C";
+document.getElementById("feelsLike").innerText =
+  (Number(data.feels_like) || 0).toFixed(1) + "°C";
   document.getElementById("weatherHumidity").innerText = "Humidity: " + data.humidity + "%";
   document.getElementById("weatherWind").innerText = "Wind: " + data.wind + " km/h";
   document.getElementById("weatherRain").innerText = "Rain: " + data.rain_probability + "%";
@@ -3684,7 +3745,8 @@ function updateWeatherUI(data) {
 
   // DASHBOARD
   document.getElementById("dashCity").innerText = data.city;
-  document.getElementById("dashTemp").innerText = data.temperature.toFixed(1) + "°C";
+  document.getElementById("dashTemp").innerText =
+  (Number(data.temperature) || 0).toFixed(1) + "°C";
   document.getElementById("dashCondition").innerHTML =
     `<i class="fas ${icon.icon}" style="color:${icon.color};margin-right:6px"></i> ${data.condition}`;
 
@@ -3746,39 +3808,65 @@ card.innerHTML = `
 }
 
 // City Search
-async function searchCities(query){
+let cityController; // global
 
-  if(query.length < 2){
-    document.getElementById("citySuggestions").style.display = "none"
-    return
+async function searchCities(query) {
+
+  const box = document.getElementById("citySuggestions");
+
+  if (query.length < 2) {
+    box.style.display = "none";
+    return;
   }
 
-  const cities = await apiRequest(`${BACKEND_URL}/city_search?q=${query}`)
+  try {
 
-  const box = document.getElementById("citySuggestions")
-  box.innerHTML = ""
-
-  cities.forEach(city => {
-
-    const div = document.createElement("div")
-
-    div.style.padding = "10px"
-    div.style.cursor = "pointer"
-    div.style.borderBottom = "1px solid var(--border)"
-
-    div.innerText = `${city.name}, ${city.state || ""} ${city.country}`
-
-    div.onclick = () => {
-      document.getElementById("cityInput").value = city.name
-      box.style.display = "none"
+    if (cityController) {
+      cityController.abort();
     }
 
-    box.appendChild(div)
+    cityController = new AbortController();
 
-  })
+    const res = await fetch(
+      `${BACKEND_URL}/city_search?q=${query}`,
+      { signal: cityController.signal }
+    );
 
-  box.style.display = cities.length ? "block" : "none"
+    if (!res.ok) throw new Error("API error");
 
+    const cities = await res.json();
+
+    box.innerHTML = "";
+
+    cities.forEach(city => {
+
+      const div = document.createElement("div");
+
+      div.style.padding = "10px";
+      div.style.cursor = "pointer";
+      div.style.borderBottom = "1px solid var(--border)";
+
+      div.innerText = `${city.name}, ${city.state || ""} ${city.country}`;
+
+      div.onclick = () => {
+        document.getElementById("cityInput").value = city.name;
+        box.style.display = "none";
+      };
+
+      box.appendChild(div);
+    });
+
+    box.style.display = cities.length ? "block" : "none";
+
+  } catch (err) {
+
+    // ignore abort errors (normal behavior)
+    if (err.name !== "AbortError") {
+      console.error(err);
+      box.style.display = "none";
+    }
+
+  }
 }
 
 // Weather Alerts Generation
@@ -3791,7 +3879,7 @@ function generateWeatherAlerts(temp, humidity, wind, condition){
 
   let alerts = []
 
-  condition = condition.toLowerCase()
+  condition = (condition || "").toLowerCase();
 
   // Heat stress
   if(temp >= 35){
@@ -3968,6 +4056,10 @@ async function loadChatHistory() {
 // Get weather icon class based on condition
 function getWeatherIcon(condition){
 
+  if (!condition || typeof condition !== "string") {
+    return {icon:"fa-cloud", color:"#cbd5e1"}
+  }
+
   condition = condition.toLowerCase()
 
   if(condition.includes("clear"))
@@ -4049,15 +4141,44 @@ function showMarketSkeleton() {
   }
 }
 
+// Show/hide weather loading
+function showWeatherLoading() {
+  const sk = document.getElementById("weatherSkeleton");
+  const ct = document.getElementById("weatherContent");
+
+  if (sk) sk.style.display = "block";
+  if (ct) ct.style.display = "none";
+}
+
+function hideWeatherLoading() {
+  const sk = document.getElementById("weatherSkeleton");
+  const ct = document.getElementById("weatherContent");
+
+  if (sk) sk.style.display = "none";
+  if (ct) ct.style.display = "flex";
+}
+
+// Dashboard weather skeleton (separate from main weather page)
+function showDashboardWeatherLoading() {
+  document.getElementById("dashWeatherSkeleton").style.display = "block";
+  document.getElementById("dashWeatherContent").style.display = "none";
+}
+
+function hideDashboardWeatherLoading() {
+  document.getElementById("dashWeatherSkeleton").style.display = "none";
+  document.getElementById("dashWeatherContent").style.display = "flex";
+}
+
 // Load all crops for dropdown
 async function loadAllCrops() {
   try {
-    const res = await fetch("/market_prices");
+    const res = await fetch(`${BACKEND_URL}/market_prices`);
     const data = await res.json();
 
     const marketData = Array.isArray(data) ? data : data.data;
 
     allCrops = [...new Set(marketData.map(i => i.commodity))];
+    console.log("Loaded crops:", allCrops.length);
 
   } catch (e) {
     console.log("Failed to load crops");
